@@ -1,0 +1,15 @@
+pre-commit:
+  piped: true
+  commands:
+    format:
+      glob: "*.{ts,tsx,mjs,json,md,yml,yaml,css}"
+      run: pnpm exec prettier --write {staged_files}
+      stage_fixed: true
+    lint:
+      glob: "*.{ts,tsx,mjs}"
+      run: pnpm exec eslint {staged_files}
+
+commit-msg:
+  commands:
+    commitlint:
+      run: pnpm exec commitlint --edit {1}

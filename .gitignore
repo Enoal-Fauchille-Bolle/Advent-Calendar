@@ -1,0 +1,10 @@
+# The real surprises and the secrets: never committed
+/content/
+.env
+.env.*
+
+# Dependencies and build output
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo

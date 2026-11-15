@@ -1,0 +1,5 @@
+allowBuilds:
+  # The optional platform package ships the binary.
+  esbuild: false
+  # The optional platform package ships the binary, and the prepare script installs the hooks.
+  lefthook: false
