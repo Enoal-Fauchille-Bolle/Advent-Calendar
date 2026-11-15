@@ -94,11 +94,12 @@ Requires Node 24 and pnpm.
 ```bash
 pnpm install
 export ADVENT_PASSWORD_HASH="$(printf %s 'test' | pnpm make-hash)"
+export ADVENT_AUTHOR_PASSWORD_HASH="$(printf %s 'author' | pnpm make-hash)"
 export ADVENT_SESSION_SECRET="$(openssl rand -base64 48)"
 ADVENT_CONTENT_DIR=examples/content pnpm dev
 ```
 
-Then open `http://127.0.0.1:3000`.
+Then open `http://127.0.0.1:3000`. `test` shows the doors as they will appear on the day; `author` opens every door.
 
 ## Run with Docker
 
