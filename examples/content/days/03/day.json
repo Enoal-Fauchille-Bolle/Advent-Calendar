@@ -1,0 +1,11 @@
+{
+  "blocks": [
+    { "type": "text", "text": "Un exemple de photo avec une légende." },
+    {
+      "type": "image",
+      "file": "photo.png",
+      "alt": "Un carré rouge",
+      "caption": "La légende de la photo"
+    }
+  ]
+}

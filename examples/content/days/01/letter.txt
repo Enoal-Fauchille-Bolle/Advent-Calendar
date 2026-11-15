@@ -1,0 +1,3 @@
+Ceci est un exemple de lettre.
+
+Chaque ligne vide commence un nouveau paragraphe, et les retours à la ligne sont gardés.

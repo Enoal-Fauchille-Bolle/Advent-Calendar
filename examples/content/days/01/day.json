@@ -1,0 +1,4 @@
+{
+  "title": "Une petite lettre",
+  "blocks": [{ "type": "letter", "file": "letter.txt" }]
+}
