@@ -1,0 +1,24 @@
+import { raw } from "hono/html";
+import type { PropsWithChildren } from "hono/jsx";
+import { strings } from "../strings.ts";
+
+export function Layout({
+  title,
+  children,
+}: PropsWithChildren<{ title: string }>) {
+  return (
+    <>
+      {raw("<!DOCTYPE html>")}
+      <html lang={strings.lang}>
+        <head>
+          <meta charset="utf-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1" />
+          <meta name="robots" content="noindex, nofollow" />
+          <title>{title}</title>
+          <link rel="stylesheet" href="/static/style.css" />
+        </head>
+        <body>{children}</body>
+      </html>
+    </>
+  );
+}
