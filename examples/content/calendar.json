@@ -1,0 +1,10 @@
+{
+  "title": "Calendrier de l'Avent",
+  "banner": "",
+  "year": 2026,
+  "month": 12,
+  "firstDay": 1,
+  "lastDay": 25,
+  "timezone": "Europe/Paris",
+  "unlockTime": "09:00"
+}
