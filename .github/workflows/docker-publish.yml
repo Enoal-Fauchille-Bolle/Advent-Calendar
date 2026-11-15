@@ -1,0 +1,97 @@
+name: Docker image
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions: {}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      # The pnpm version comes from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+
+  image:
+    needs: checks
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      # Registry names must be lowercase, and the owner login is not.
+      - run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/advent-calendar" >> "$GITHUB_ENV"
+
+      # `v0.1.0` gets `0.1.0` and `latest`; a pre-release such as `v0.1.0-rc.1`
+      # only gets `0.1.0-rc.1`.
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.IMAGE }}
+          tags: type=semver,pattern={{version}}
+
+      # arm64 is left out until the repository is public.
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: deploy/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  release:
+    needs: image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # The whole history, to find the previous final tag for the notes.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # The notes always start at the previous final tag: `v0.2.0-rc.2` and
+      # `v0.2.0` both list everything since `v0.1.0`, never just since `rc.1`.
+      - id: range
+        run: |
+          previous=$(git tag --merged "$GITHUB_REF_NAME" --list 'v[0-9]*' --sort=-v:refname \
+            | grep -v -e '-' | grep -vx "$GITHUB_REF_NAME" | head -1 || true)
+          echo "range=${previous:+$previous..$GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      # `--offline` keeps the repository for the links only, with no GitHub API call.
+      - uses: orhun/git-cliff-action@v4
+        with:
+          config: cliff.toml
+          args: ${{ steps.range.outputs.range }} --tag ${{ github.ref_name }} --github-repo ${{ github.repository }} --offline --strip all
+        env:
+          OUTPUT: RELEASE_NOTES.md
+
+      # A tag with a hyphen gets no `latest` image, so it is a pre-release here too.
+      - uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          body_path: RELEASE_NOTES.md

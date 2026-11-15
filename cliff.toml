@@ -1,0 +1,44 @@
+# git-cliff builds the body of each GitHub Release from the Conventional
+# Commits enforced by commitlint. The notes live in the Release only: no
+# CHANGELOG.md is committed. The range (previous final tag to the released
+# tag) is given by .github/workflows/docker-publish.yml. The workflow passes
+# the repository with `--github-repo`, so links follow the repository the notes
+# are built in.
+[changelog]
+body = """
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% for commit in commits %}
+- {{ commit.message | split(pat="\n") | first | upper_first }} ([{{ commit.id | truncate(length=7, end="") }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/commit/{{ commit.id }}))
+{%- endfor %}
+{% endfor %}
+{% if previous.version %}
+**Full changelog**: [{{ previous.version }}...{{ version }}](https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}/compare/{{ previous.version }}...{{ version }})
+{% endif %}
+"""
+trim = true
+
+[git]
+conventional_commits = true
+# Drops the merge and revert messages git writes itself.
+filter_unconventional = true
+# Drops whatever no parser below claims, instead of printing it ungrouped.
+filter_commits = true
+# Only final tags count as releases, so a range crossing `v0.2.0-rc.1` is
+# still one block. The tag being released is given with `--tag`.
+tag_pattern = "^v[0-9]+\\.[0-9]+\\.[0-9]+$"
+# The first parser that matches wins, so the `security` scope comes before
+# `feat` and `fix`. Commits have no body (commitlint), so the scope is the only
+# place a security change can be marked. Groups are sorted alphabetically: the
+# `<!-- N -->` prefixes set the display order and `striptags` removes them.
+commit_parsers = [
+  { message = "^fix\\(ci\\)", skip = true },
+  { message = "^(feat|fix)\\(security\\)", group = "<!-- 0 -->Security" },
+  { message = "^feat", group = "<!-- 1 -->Features" },
+  { message = "^fix", group = "<!-- 2 -->Bug fixes" },
+  { message = "^perf", group = "<!-- 3 -->Performance" },
+  { message = "^build\\(deps", group = "<!-- 4 -->Dependencies" },
+  { message = "^revert", group = "<!-- 5 -->Reverts" },
+  { message = ".*", skip = true },
+]
+sort_commits = "oldest"
