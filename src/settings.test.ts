@@ -12,8 +12,13 @@ const valid = {
 };
 
 describe("parseSettings", () => {
-  it("accepts valid settings and defaults the banner to empty", () => {
-    expect(parseSettings(valid)).toEqual({ ...valid, banner: "" });
+  it("accepts valid settings and defaults the banner and sizes to empty", () => {
+    expect(parseSettings(valid)).toEqual({ ...valid, banner: "", sizes: {} });
+  });
+
+  it("accepts door sizes chosen by hand", () => {
+    const sizes = { "1": "big", "25": "wide" };
+    expect(parseSettings({ ...valid, sizes }).sizes).toEqual(sizes);
   });
 
   it.each([
@@ -24,6 +29,9 @@ describe("parseSettings", () => {
     ["a last day past the month", { month: 11, lastDay: 31 }],
     ["an unknown key", { colour: "red" }],
     ["a fractional day", { firstDay: 1.5 }],
+    ["an unknown door size", { sizes: { "1": "huge" } }],
+    ["a size for a door out of range", { sizes: { "26": "big" } }],
+    ["a door number with a leading zero", { sizes: { "05": "big" } }],
   ])("refuses %s", (_, change) => {
     expect(() => parseSettings({ ...valid, ...change })).toThrow(SettingsError);
   });

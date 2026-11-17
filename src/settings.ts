@@ -7,6 +7,13 @@ export const SETTINGS_FILE = "calendar.json";
 
 export class SettingsError extends Error {}
 
+/**
+ * Tile sizes in the door grid: small is one column and one row, tall two rows, wide
+ * two columns, big two of each.
+ */
+export const DOOR_SIZES = ["small", "tall", "wide", "big"] as const;
+export type DoorSize = (typeof DOOR_SIZES)[number];
+
 function isTimeZone(name: string): boolean {
   try {
     new Intl.DateTimeFormat("en", { timeZone: name });
@@ -36,6 +43,13 @@ const settingsSchema = z
     unlockTime: z
       .string()
       .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "expected HH:MM, such as 09:00"),
+    /** Door sizes chosen by hand, by door number; other doors take theirs from the content. */
+    sizes: z
+      .record(
+        z.string().regex(/^[1-9]\d?$/, "expected a door number, such as 5"),
+        z.enum(DOOR_SIZES),
+      )
+      .default({}),
   })
   .refine((s) => s.firstDay <= s.lastDay, {
     message: "firstDay must not come after lastDay",
@@ -44,7 +58,17 @@ const settingsSchema = z
   .refine((s) => s.lastDay <= daysInMonth(s.year, s.month), {
     message: "lastDay is past the end of the month",
     path: ["lastDay"],
-  });
+  })
+  .refine(
+    (s) =>
+      Object.keys(s.sizes).every(
+        (day) => Number(day) >= s.firstDay && Number(day) <= s.lastDay,
+      ),
+    {
+      message: "a door in sizes is outside firstDay to lastDay",
+      path: ["sizes"],
+    },
+  );
 
 export type Settings = z.infer<typeof settingsSchema>;
 

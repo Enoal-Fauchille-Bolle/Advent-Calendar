@@ -2,12 +2,15 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DayError, findMedia, loadDay } from "./days.ts";
+import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
 
 const EXAMPLES = "examples/content";
 
 /** A content folder holding one day with the given `day.json` and extra files. */
-function contentWith(day: unknown, files: Record<string, string> = {}): string {
+function contentWith(
+  day: unknown,
+  files: Record<string, string | Uint8Array> = {},
+): string {
   const root = mkdtempSync(join(tmpdir(), "advent-days-"));
   const folder = join(root, "days", "04");
   mkdirSync(folder, { recursive: true });
@@ -76,4 +79,52 @@ describe("findMedia", () => {
       expect(findMedia(EXAMPLES, 1, name)).toBeNull();
     },
   );
+});
+
+/** The start of a PNG file, enough for its width and height to be read. */
+function pngHeader(width: number, height: number): Uint8Array {
+  const bytes = new Uint8Array(33);
+  bytes.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+  const view = new DataView(bytes.buffer);
+  view.setUint32(8, 13);
+  bytes.set([0x49, 0x48, 0x44, 0x52], 12); // IHDR
+  view.setUint32(16, width);
+  view.setUint32(20, height);
+  return bytes;
+}
+
+const photoDay = (file: string) => ({ blocks: [{ type: "image", file }] });
+
+describe("doorSize", () => {
+  it.each([
+    ["a letter", 1, "tall"],
+    ["a voucher before a list", 2, "small"],
+    ["a text before a square photo", 3, "small"],
+    ["a day with no folder", 24, "small"],
+  ])("sizes %s", async (_, day, size) => {
+    expect(await doorSize(EXAMPLES, day)).toBe(size);
+  });
+
+  it.each([
+    ["a landscape photo", 400, 300, "wide"],
+    ["a portrait photo", 300, 400, "tall"],
+    ["a square photo", 300, 300, "big"],
+    ["a nearly square photo", 320, 300, "big"],
+  ])("sizes %s by its shape", async (_, width, height, size) => {
+    const root = contentWith(photoDay("photo.png"), {
+      "photo.png": pngHeader(width, height),
+    });
+    expect(await doorSize(root, 4)).toBe(size);
+  });
+
+  it.each([
+    ["a list", { blocks: [{ type: "list", items: ["a"] }] }, "tall"],
+    ["a sound", { blocks: [{ type: "audio", file: "voice.mp3" }] }, "small"],
+    ["a broken day", { blocks: [] }, "small"],
+    ["a missing photo", photoDay("missing.png"), "small"],
+    ["a photo that is not one", photoDay("fake.png"), "small"],
+  ])("sizes %s", async (_, day, size) => {
+    const root = contentWith(day, { "voice.mp3": "x", "fake.png": "text" });
+    expect(await doorSize(root, 4)).toBe(size);
+  });
 });

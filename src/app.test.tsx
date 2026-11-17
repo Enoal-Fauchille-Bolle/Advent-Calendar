@@ -19,9 +19,11 @@ beforeAll(async () => {
   authorPasswordHash = await hashPassword("author password", FAST);
 });
 
-function makeApp() {
+function makeApp(
+  sizes: Record<string, "small" | "tall" | "wide" | "big"> = {},
+) {
   return createApp({
-    settings: readSettings(CONTENT),
+    settings: { ...readSettings(CONTENT), sizes },
     contentDir: CONTENT,
     passwordHash,
     authorPasswordHash,
@@ -79,6 +81,18 @@ describe("login", () => {
     expect(page).toContain('data-day="1"');
     expect(page).toContain('data-day="25"');
     expect(page).not.toContain("Mode auteur");
+    // Sizes come from the content: a letter on day 1, a voucher on day 2.
+    expect(page).toMatch(/class="door door--tall door--p\d" data-day="1"/);
+    expect(page).toMatch(/class="door door--small door--p\d" data-day="2"/);
+  });
+
+  it("lets the settings choose a door's size", async () => {
+    const app = makeApp({ "1": "big" });
+    const cookie = await cookieFor(app, "guest password");
+    const response = await app.request(`${ORIGIN}/`, { headers: { cookie } });
+    expect(await response.text()).toMatch(
+      /class="door door--big door--p\d" data-day="1"/,
+    );
   });
 
   it("slows down guessing after five failures", async () => {

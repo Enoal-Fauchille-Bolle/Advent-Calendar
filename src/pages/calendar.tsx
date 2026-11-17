@@ -1,6 +1,6 @@
 import { raw } from "hono/html";
 import type { Role } from "../auth/session.ts";
-import type { Settings } from "../settings.ts";
+import type { DoorSize, Settings } from "../settings.ts";
 import { strings } from "../strings.ts";
 import { calendarDays, isUnlocked } from "../unlock.ts";
 import { Layout } from "./layout.tsx";
@@ -12,10 +12,13 @@ export function CalendarPage({
   settings,
   role,
   now,
+  sizes,
 }: {
   settings: Settings;
   role: Role;
   now: Date;
+  /** The tile size of each door; a door missing from it is small. */
+  sizes: ReadonlyMap<number, DoorSize>;
 }) {
   // `<` cannot close the script element once escaped.
   const clientStrings = JSON.stringify(strings.client).replaceAll(
@@ -43,7 +46,7 @@ export function CalendarPage({
             return (
               <button
                 type="button"
-                class={`door door--p${String((day * 5) % PATTERNS)}`}
+                class={`door door--${sizes.get(day) ?? "small"} door--p${String((day * 5) % PATTERNS)}`}
                 data-day={String(day)}
                 data-state={open || role === "author" ? "open" : "locked"}
                 data-unlocks={strings.unlocksOn(

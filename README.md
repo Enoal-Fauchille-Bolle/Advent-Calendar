@@ -34,6 +34,7 @@ content/
 | `lastDay`    | Last door                                                    | `25`              |
 | `timezone`   | IANA time zone the unlock time is read in                    | `"Europe/Paris"`  |
 | `unlockTime` | Local time at which door N opens on day N, `HH:MM`, 24 hours | `"09:00"`         |
+| `sizes`      | Door sizes chosen by hand, by door number (see below)        | `{ "5": "big" }`  |
 
 The server reads `calendar.json` once at start: restart it after a change. Day folders are read on each request, so a day can be added or fixed while the server runs.
 
@@ -62,6 +63,22 @@ The server reads `calendar.json` once at start: restart it after a change. Day f
 - File names are plain names in the day's folder, without any folder part.
 - Images: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`. Audio: `.mp3`, `.m4a`, `.aac`, `.ogg`, `.wav`.
 - A door with no folder shows as empty once open.
+
+### Door sizes
+
+Each door is a tile in a three-column grid: `small` (one column, one row), `tall` (two rows), `wide` (two columns) or `big` (two of each). A door keeps its size once opened, and shows a preview of its day; text longer than the tile fades out, and tapping the open door shows the whole day.
+
+The size comes from the day's first block:
+
+| First block                | Size    |
+| -------------------------- | ------- |
+| `letter`, `list`           | `tall`  |
+| `text`, `voucher`, `audio` | `small` |
+| `image`, landscape         | `wide`  |
+| `image`, portrait          | `tall`  |
+| `image`, roughly square    | `big`   |
+
+A photo counts as landscape when its width is at least 1.25 times its height, and as portrait the other way round. A door with no folder, a broken `day.json` or an unreadable photo is `small`. `sizes` in `calendar.json` overrides any door. An opened door is remembered in the browser that opened it.
 
 ## Configuration
 

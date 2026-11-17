@@ -12,12 +12,12 @@ import {
   type Role,
 } from "./auth/session.ts";
 import type { LoginThrottle } from "./auth/throttle.ts";
-import { DayError, findMedia, loadDay } from "./days.ts";
+import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
 import { CalendarPage } from "./pages/calendar.tsx";
 import { LoginPage } from "./pages/login.tsx";
-import type { Settings } from "./settings.ts";
+import type { DoorSize, Settings } from "./settings.ts";
 import { strings } from "./strings.ts";
-import { isInRange, isUnlocked } from "./unlock.ts";
+import { calendarDays, isInRange, isUnlocked } from "./unlock.ts";
 
 export interface AppDeps {
   settings: Settings;
@@ -175,9 +175,25 @@ export function createApp(deps: AppDeps): Hono<Env> {
     await next();
   });
 
-  app.get("/", (c) =>
-    c.html(<CalendarPage settings={settings} role={c.var.role} now={now()} />),
-  );
+  app.get("/", async (c) => {
+    // A size chosen in the settings wins; the others come from each day's content.
+    const sizes = new Map<number, DoorSize>(
+      await Promise.all(
+        calendarDays(settings).map(async (day): Promise<[number, DoorSize]> => [
+          day,
+          settings.sizes[String(day)] ?? (await doorSize(contentDir, day)),
+        ]),
+      ),
+    );
+    return c.html(
+      <CalendarPage
+        settings={settings}
+        role={c.var.role}
+        now={now()}
+        sizes={sizes}
+      />,
+    );
+  });
 
   /** `null` when the visitor may see the day; otherwise the response to send. */
   const refuse = (c: Context<Env>, day: number | null) => {

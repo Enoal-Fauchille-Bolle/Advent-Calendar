@@ -140,6 +140,8 @@ button {
   grid-template-columns: repeat(3, 1fr);
   grid-auto-rows: 6.5rem;
   gap: 0.75rem;
+  /* A later door fills a hole left by a bigger one, out of number order. */
+  grid-auto-flow: dense;
 }
 
 .door {
@@ -151,7 +153,18 @@ button {
   transition: transform 0.15s ease;
 }
 
-.door:nth-child(4n + 1) {
+/* Tile sizes: the server picks one per door, from the content or the settings. */
+
+.door--tall {
+  grid-row: span 2;
+}
+
+.door--wide {
+  grid-column: span 2;
+}
+
+.door--big {
+  grid-column: span 2;
   grid-row: span 2;
 }
 
@@ -161,6 +174,10 @@ button {
 
 .door[data-state="locked"] {
   filter: saturate(0.7);
+}
+
+.door[data-loading="true"] {
+  opacity: 0.7;
 }
 
 .door-number {
@@ -222,6 +239,99 @@ button {
 
 .door--p5 {
   background: var(--pine);
+}
+
+/* An opened door: its preview replaces the pattern, at the same size. */
+
+.door {
+  position: relative;
+  overflow: hidden;
+}
+
+.door[data-opened="true"] {
+  place-items: stretch;
+  padding: 0;
+  background: var(--card);
+  color: var(--ink);
+  text-align: left;
+}
+
+.door[data-opened="true"] .door-number {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  z-index: 1;
+  min-width: 1.75rem;
+  padding: 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.door-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-height: 0;
+  overflow: hidden;
+  padding: 1.9rem 0.6rem 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.35;
+  /* Text longer than the door fades out at the bottom. */
+  mask-image: linear-gradient(to bottom, black 70%, transparent);
+}
+
+.door-preview:has(.preview-photo) {
+  padding: 0;
+  mask-image: none;
+}
+
+/* The photo covers the whole door, cropped around its centre. */
+.preview-photo {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+.preview-title {
+  color: var(--wine);
+  font-weight: bold;
+}
+
+.preview-text,
+.preview-letter,
+.preview-list {
+  white-space: pre-line;
+}
+
+.preview-letter {
+  font-style: italic;
+}
+
+.preview-voucher {
+  display: grid;
+  padding: 0.4rem;
+  border: 2px dashed var(--wine);
+  border-radius: var(--radius);
+  text-align: center;
+}
+
+.preview-voucher .voucher-title {
+  color: var(--wine);
+  font-weight: bold;
+}
+
+.preview-image {
+  display: block;
+  width: 100%;
+  border-radius: 4px;
+}
+
+.preview-audio {
+  color: var(--wine);
+  font-weight: bold;
 }
 
 @media (min-width: 40rem) {

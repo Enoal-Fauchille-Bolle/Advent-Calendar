@@ -1,5 +1,7 @@
-// Opens a door: asks the server for the day, then shows its blocks in the dialog.
-// The server refuses a locked day, so this script never holds a surprise early.
+// Opens a door in place: asks the server for the day and shows a preview of it inside
+// the door, which stays open on later visits (remembered in this browser). Tapping an
+// opened door shows the whole day in the dialog. The server refuses a locked day, so
+// this script never holds a surprise early.
 
 type ShownBlock =
   | { type: "text" | "letter"; text: string }
@@ -99,53 +101,165 @@ function renderBlock(block: ShownBlock): HTMLElement {
   }
 }
 
-async function openDoor(door: HTMLButtonElement): Promise<void> {
-  const day = door.dataset.day ?? "";
-  if (door.dataset.state === "locked") {
-    show(
-      element(
-        "p",
-        "door-message",
-        `${strings.locked} ${door.dataset.unlocks ?? ""}.`,
-      ),
+/** Doors opened in this browser, by number. Storage can be missing or refused. */
+const STORAGE_KEY = "advent-calendar:opened";
+
+function openedDays(): Set<string> {
+  try {
+    const saved: unknown = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) ?? "[]",
     );
-    return;
+    return new Set(
+      Array.isArray(saved)
+        ? saved.filter((day): day is string => typeof day === "string")
+        : [],
+    );
+  } catch {
+    return new Set();
   }
-  show(element("p", "door-message", strings.loading));
+}
+
+function remember(day: string): void {
+  try {
+    const days = openedDays();
+    days.add(day);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([...days]));
+  } catch {
+    // Without storage the door still opens; it just closes again on the next visit.
+  }
+}
+
+/** Days already fetched, for the dialog. */
+const fetched = new Map<string, ShownDay>();
+
+type Fetched = ShownDay | "locked" | "empty" | "error";
+
+async function fetchDay(day: string): Promise<Fetched> {
+  const known = fetched.get(day);
+  if (known !== undefined) return known;
   try {
     const response = await fetch(`/api/days/${day}`, {
       headers: { Accept: "application/json" },
     });
     if (response.status === 401) {
       window.location.assign("/login");
-      return;
+      return "error";
     }
-    if (response.status === 403) {
-      // The page was loaded before the door opened, and the clock says not yet.
-      show(
-        element(
-          "p",
-          "door-message",
-          `${strings.locked} ${door.dataset.unlocks ?? ""}.`,
-        ),
-      );
-      return;
-    }
-    if (response.status === 404) {
-      show(element("p", "door-message", strings.empty));
-      return;
-    }
-    if (!response.ok) throw new Error(String(response.status));
+    // 403: the page was loaded before the door opened, and the clock says not yet.
+    if (response.status === 403) return "locked";
+    if (response.status === 404) return "empty";
+    if (!response.ok) return "error";
     const shown = (await response.json()) as ShownDay;
-    const nodes: Node[] = [];
-    if (shown.title !== null)
-      nodes.push(element("h2", "day-title", shown.title));
-    for (const block of shown.blocks) nodes.push(renderBlock(block));
-    show(...nodes);
-    door.dataset.opened = "true";
+    fetched.set(day, shown);
+    return shown;
   } catch {
-    show(element("p", "door-message", strings.error));
+    return "error";
   }
+}
+
+function lockedMessage(door: HTMLButtonElement): string {
+  return `${strings.locked} ${door.dataset.unlocks ?? ""}.`;
+}
+
+function showMessage(text: string): void {
+  show(element("p", "door-message", text));
+}
+
+function showDay(shown: ShownDay): void {
+  const nodes: Node[] = [];
+  if (shown.title !== null) nodes.push(element("h2", "day-title", shown.title));
+  for (const block of shown.blocks) nodes.push(renderBlock(block));
+  show(...nodes);
+}
+
+/**
+ * A block as a door shows it. A door is a button, so its preview holds no link, player
+ * or other control: only text and pictures, in spans.
+ */
+function previewBlock(block: ShownBlock): HTMLElement {
+  switch (block.type) {
+    case "text":
+    case "letter":
+      return element("span", `preview-${block.type}`, block.text);
+    case "list": {
+      const lines = block.items.map((item) => `• ${item}`);
+      if (block.title !== null) lines.unshift(block.title);
+      return element("span", "preview-list", lines.join("\n"));
+    }
+    case "voucher": {
+      const card = element("span", "preview-voucher");
+      card.append(
+        element("span", "voucher-kicker", strings.voucher),
+        element("span", "voucher-title", block.title),
+      );
+      return card;
+    }
+    case "image": {
+      const image = element("img", "preview-image");
+      image.src = block.url;
+      image.alt = "";
+      return image;
+    }
+    case "audio":
+      return element(
+        "span",
+        "preview-audio",
+        block.caption === null ? "▶" : `▶ ${block.caption}`,
+      );
+  }
+}
+
+/** Replaces the closed door by a preview of its day. */
+function fill(door: HTMLButtonElement, shown: ShownDay): void {
+  const preview = element("span", "door-preview");
+  const [first] = shown.blocks;
+  if (first?.type === "image") {
+    // A photo first fills the whole door.
+    const image = element("img", "preview-photo");
+    image.src = first.url;
+    image.alt = "";
+    preview.append(image);
+  } else {
+    if (shown.title !== null) {
+      preview.append(element("span", "preview-title", shown.title));
+    }
+    for (const block of shown.blocks) preview.append(previewBlock(block));
+  }
+  door.querySelector(".door-preview")?.remove();
+  door.append(preview);
+  door.dataset.opened = "true";
+}
+
+async function openDoor(door: HTMLButtonElement): Promise<void> {
+  const day = door.dataset.day ?? "";
+  if (door.dataset.state === "locked") {
+    showMessage(lockedMessage(door));
+    return;
+  }
+  if (door.dataset.loading === "true") return;
+  door.dataset.loading = "true";
+  const shown = await fetchDay(day);
+  delete door.dataset.loading;
+  if (shown === "locked") showMessage(lockedMessage(door));
+  else if (shown === "empty") showMessage(strings.empty);
+  else if (shown === "error") showMessage(strings.error);
+  else if (door.dataset.opened === "true") showDay(shown);
+  else {
+    fill(door, shown);
+    remember(day);
+  }
+}
+
+// Doors opened on an earlier visit open again, without the dialog.
+const remembered = openedDays();
+for (const door of document.querySelectorAll<HTMLButtonElement>(
+  'button.door[data-state="open"]',
+)) {
+  const day = door.dataset.day ?? "";
+  if (!remembered.has(day)) continue;
+  void fetchDay(day).then((shown) => {
+    if (typeof shown !== "string") fill(door, shown);
+  });
 }
 
 document.addEventListener("click", (event) => {
