@@ -66,7 +66,8 @@ export function CalendarPage({
           <button type="submit">{strings.calendar.logout}</button>
         </form>
       </main>
-      <dialog id="day-dialog" class="day-dialog">
+      {/* closedby="any": a tap outside the dialog closes it too ("light dismiss"). */}
+      <dialog id="day-dialog" class="day-dialog" closedby="any">
         {/* Focus starts here, at the top: by default it goes to the first control,
             the player or the close button, and a tall day would open scrolled down. */}
         <div
