@@ -1,0 +1,9 @@
+{
+  "blocks": [
+    {
+      "type": "image",
+      "file": "portrait.jpg",
+      "alt": "Une mire de test en portrait"
+    }
+  ]
+}

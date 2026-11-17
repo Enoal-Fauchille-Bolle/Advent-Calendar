@@ -1,0 +1,6 @@
+{
+  "title": "Un message vocal",
+  "blocks": [
+    { "type": "audio", "file": "vocal.m4a", "caption": "Un exemple en .m4a" }
+  ]
+}

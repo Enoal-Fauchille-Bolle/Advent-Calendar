@@ -1,0 +1,10 @@
+{
+  "blocks": [
+    {
+      "type": "image",
+      "file": "paysage.jpg",
+      "alt": "Une mire de test en paysage",
+      "caption": "Une photo en paysage donne une porte large."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Photo, texte et message vocal",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "portrait.jpg",
+      "alt": "Une mire de test en portrait",
+      "caption": "Une légende sous la photo"
+    },
+    {
+      "type": "text",
+      "text": "Un texte sous la photo. Sur un écran d'ordinateur, cette fenêtre dépasse la hauteur de l'écran."
+    },
+    { "type": "audio", "file": "vocal.m4a" }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "blocks": [
+    {
+      "type": "image",
+      "file": "carre.jpg",
+      "alt": "Une mire de test carrée",
+      "caption": "Une photo presque carrée donne une grande porte."
+    }
+  ]
+}

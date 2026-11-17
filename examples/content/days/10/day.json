@@ -1,0 +1,6 @@
+{
+  "blocks": [
+    { "type": "text", "text": "Un texte, puis un message vocal en .wav." },
+    { "type": "audio", "file": "vocal.wav" }
+  ]
+}
