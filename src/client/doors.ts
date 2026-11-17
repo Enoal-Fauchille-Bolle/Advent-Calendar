@@ -45,6 +45,8 @@ function show(...nodes: Node[]): void {
   if (dialog === null || content === null || content === undefined) return;
   content.replaceChildren(...nodes);
   if (!dialog.open) dialog.showModal();
+  // The dialog keeps its scroll between two days: each one starts at its top.
+  dialog.scrollTop = 0;
 }
 
 function caption(figure: HTMLElement, text: string | null): void {
