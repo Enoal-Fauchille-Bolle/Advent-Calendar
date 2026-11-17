@@ -364,6 +364,21 @@ button {
   color: var(--ink);
 }
 
+/* While the dialog is open, the page behind it does not scroll, and a scroll that
+   reaches the end of the dialog stops there. The gutter keeps the page from shifting
+   sideways when its scrollbar goes away. */
+html {
+  scrollbar-gutter: stable;
+}
+
+html:has(.day-dialog[open]) {
+  overflow: hidden;
+}
+
+.day-dialog {
+  overscroll-behavior: contain;
+}
+
 /* Holds the focus when the dialog opens, but is not a control: no outline. */
 .day-content:focus {
   outline: none;
