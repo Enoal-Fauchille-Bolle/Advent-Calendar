@@ -134,7 +134,7 @@ ADVENT_CONTENT=../content
 docker compose -f deploy/docker-compose.yml up -d --build
 ```
 
-The port is bound to `127.0.0.1:3000`, for a reverse proxy on the same host. Behind HTTPS, the proxy must send `X-Forwarded-Proto: https` so the login cookie is marked `Secure`.
+The port is bound to `127.0.0.1:3000`, for a reverse proxy on the same host. Behind HTTPS, the proxy must send `X-Forwarded-Proto: https` so the login cookie is marked `Secure`. The proxy must not cache responses: media under `/media/` require the login cookie, and a cache keyed without it would serve them to anyone.
 
 ## Development
 
