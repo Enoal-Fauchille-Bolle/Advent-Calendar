@@ -1,5 +1,23 @@
 /* Mobile first: the base rules are for a phone, wider screens add to them. */
 
+/* Fraunces (titles, door numbers) and Nunito (text), served from assets/fonts/
+   under the SIL Open Font License: the CSP allows no font from elsewhere. */
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 900;
+  src: url("/static/fonts/fraunces.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 1000;
+  src: url("/static/fonts/nunito.woff2") format("woff2");
+}
+
 :root {
   --paper: #fbf6ee;
   --ink: #3a1420;
@@ -22,8 +40,12 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: "Nunito", system-ui, sans-serif;
   line-height: 1.5;
+}
+
+:is(h1, h2, .door-number, .voucher-title, .preview-title) {
+  font-family: "Fraunces", Georgia, serif;
 }
 
 button {
@@ -40,28 +62,149 @@ button {
   white-space: nowrap;
 }
 
-/* Login */
+/* Login: a gift. The door patterns become wrapping paper, crossed by a ribbon with a
+   bow, and the form sits on the gift tag hanging from it. */
 
 .login {
+  position: relative;
   min-height: 100dvh;
+  overflow: hidden;
   display: grid;
-  place-content: center;
-  gap: 1rem;
-  padding: 1.5rem 1rem;
-  text-align: center;
+  justify-items: center;
+  align-content: start;
+  padding: 15.5rem 1rem 2rem;
 }
 
-.login h1 {
-  margin: 0;
+.gift,
+.gift::before {
+  position: absolute;
+  inset: 0;
+}
+
+.gift::before {
+  content: "";
+  opacity: 0.55;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgb(122 31 61 / 0.35) 0 8px,
+      transparent 8px 16px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(122 31 61 / 0.35) 0 8px,
+      transparent 8px 16px
+    ),
+    var(--card);
+}
+
+.ribbon {
+  position: absolute;
+  background: var(--wine);
+  box-shadow: 0 0 0 3px rgb(255 253 248 / 0.5);
+}
+
+.ribbon--down {
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 46px;
+  transform: translateX(-50%);
+}
+
+.ribbon--across {
+  left: 0;
+  right: 0;
+  top: 140px;
+  height: 46px;
+}
+
+.bow {
+  position: absolute;
+  left: 50%;
+  top: 163px;
+  width: 150px;
+  height: 80px;
+  transform: translate(-50%, -50%);
+}
+
+.bow i {
+  position: absolute;
+  top: 8px;
+  width: 70px;
+  height: 56px;
+  border: 12px solid var(--wine);
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+}
+
+.bow i:first-child {
+  left: 0;
+  transform: rotate(-18deg);
+}
+
+.bow i:nth-child(2) {
+  right: 0;
+  transform: rotate(18deg);
+}
+
+.bow b {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 30px;
+  height: 30px;
+  transform: translate(-50%, -50%);
+  border-radius: 8px;
+  background: #5e1830;
+}
+
+.gift-string {
+  position: absolute;
+  left: 50%;
+  top: 168px;
+  width: 2px;
+  height: 90px;
+  background: var(--mustard);
+  transform: rotate(-3deg);
+  transform-origin: top;
+}
+
+.login-tag {
+  position: relative;
+  width: min(300px, 100%);
+  padding: 2.4rem 1.4rem 1.4rem;
+  transform: rotate(-3deg);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: 0 10px 24px rgb(58 20 32 / 0.28);
+  clip-path: polygon(14% 0, 86% 0, 100% 9%, 100% 100%, 0 100%, 0 9%);
+}
+
+/* The tag's hole, where the string goes through. */
+.login-tag::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: var(--paper);
+  box-shadow: inset 0 0 0 3px var(--mustard);
+}
+
+.login-tag h1 {
+  margin: 0 0 1rem;
   color: var(--wine);
-  font-size: 1.75rem;
+  font-size: 1.6rem;
+  line-height: 1.2;
+  text-align: center;
 }
 
 .login-form {
   display: grid;
   gap: 0.75rem;
-  width: min(100%, 22rem);
-  text-align: left;
 }
 
 .login-form input {
@@ -73,7 +216,6 @@ button {
 }
 
 .login-form button,
-.logout button,
 .day-dialog form button {
   padding: 0.75rem 1rem;
   border: 0;
@@ -82,10 +224,14 @@ button {
   color: var(--card);
 }
 
+/* A note under the field, apart from the title's look. */
 .login-error {
   margin: 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius);
+  background: rgb(242 196 207 / 0.6);
   color: var(--wine);
-  font-weight: bold;
+  font-size: 0.9rem;
 }
 
 /* Banner */
@@ -121,18 +267,191 @@ button {
   }
 }
 
+/* Header: on a phone, a top line (date, author badge, bell, logout) above the title;
+   on a wider screen, the title first and the rest on the same line. */
+
+.site-header {
+  padding: 0.9rem 1rem;
+  border-bottom: 3px solid var(--wine);
+  background:
+    repeating-linear-gradient(
+      0deg,
+      rgb(122 31 61 / 0.12) 0 8px,
+      transparent 8px 16px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgb(122 31 61 / 0.12) 0 8px,
+      transparent 8px 16px
+    ),
+    var(--card);
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.header-date {
+  color: #6b3d4a;
+  font-size: 0.95rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.author-badge {
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--mustard);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+/* The bell and the logout go to the right end of the line. */
+.notify,
+.logout {
+  margin-left: auto;
+}
+
+.notify:not([hidden]) + .logout {
+  margin-left: 0;
+}
+
+.notify,
+.logout button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 34px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.notify {
+  width: 34px;
+  padding: 0;
+  border: 2px solid var(--wine);
+  background: var(--card);
+  color: var(--wine);
+}
+
+.notify[hidden] {
+  display: none;
+}
+
+.logout button {
+  padding: 0.35rem 0.75rem;
+  border: 0;
+  background: var(--wine);
+  color: var(--card);
+}
+
+/* A label that phones only give to screen readers: there, the icon stands alone. */
+.header-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.logout button:has(.header-label) {
+  width: 34px;
+  padding: 0;
+}
+
+.icon {
+  flex: none;
+  width: 1.1em;
+  height: 1.1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* While notifications wait for an answer, the bell swings now and then. It stops
+   once they are refused. */
+.notify[data-permission="default"] .icon {
+  transform-origin: 50% 15%;
+  animation: bell-swing 5s ease-in-out infinite;
+}
+
+@keyframes bell-swing {
+  0%,
+  14%,
+  100% {
+    rotate: 0deg;
+  }
+  2% {
+    rotate: 16deg;
+  }
+  5% {
+    rotate: -13deg;
+  }
+  8% {
+    rotate: 9deg;
+  }
+  11% {
+    rotate: -5deg;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .notify[data-permission="default"] .icon {
+    animation: none;
+  }
+}
+
+.header-title {
+  margin: 0.35rem 0 0;
+  color: var(--wine);
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+@media (min-width: 40rem) {
+  .site-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 2rem;
+  }
+
+  .header-title {
+    order: -1;
+    margin: 0;
+    font-size: 2rem;
+  }
+
+  .header-bar {
+    flex: 1;
+    gap: 0.75rem;
+  }
+
+  .header-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip-path: none;
+  }
+
+  .notify,
+  .logout button:has(.header-label) {
+    width: auto;
+    padding: 0.35rem 0.75rem;
+  }
+}
+
 /* Calendar: a placeholder grid until the collage layout lands. */
 
 .calendar {
   padding: 1rem;
-}
-
-.author-note {
-  margin: 0 0 1rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: var(--radius);
-  background: var(--mustard);
-  font-size: 0.9rem;
 }
 
 .doors {
@@ -341,17 +660,6 @@ button {
   }
 }
 
-.logout {
-  margin-top: 2rem;
-  text-align: center;
-}
-
-.logout button {
-  background: transparent;
-  color: var(--wine);
-  text-decoration: underline;
-}
-
 /* Opened day */
 
 .day-dialog {
@@ -366,13 +674,11 @@ button {
 
 /* While the dialog is open, the page behind it does not scroll, and a scroll that
    reaches the end of the dialog stops there. The gutter keeps the page from shifting
-   sideways when its scrollbar goes away. */
-html {
-  scrollbar-gutter: stable;
-}
-
+   sideways when its scrollbar goes away; it is kept only then, so that the rest of
+   the time the banner and the header reach the right edge. */
 html:has(.day-dialog[open]) {
   overflow: hidden;
+  scrollbar-gutter: stable;
 }
 
 .day-dialog {

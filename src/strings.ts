@@ -11,8 +11,10 @@ export const strings = {
   },
   calendar: {
     door: (day: number) => `Porte ${String(day)}`,
+    authorBadge: "Auteur",
     authorMode:
       "Mode auteur : toutes les portes s'ouvrent, même avant leur date.",
+    notifications: "Notifications",
     logout: "Se déconnecter",
     close: "Fermer",
   },
@@ -23,7 +25,22 @@ export const strings = {
     empty: "Cette porte est encore vide.",
     error: "La porte est coincée. Réessaie dans un instant.",
     voucher: "Bon pour",
+    notificationsBlocked:
+      "Les notifications sont bloquées pour ce site. Pour les activer, ouvre les réglages du site dans ton navigateur (souvent l'icône à gauche de l'adresse), autorise les notifications, puis recharge la page.",
   },
+  /** "Mer. 2 déc.": today's date in the calendar's time zone, for the header. */
+  shortDate: (now: Date, timeZone: string) => {
+    const date = new Intl.DateTimeFormat("fr-FR", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      timeZone,
+    }).format(now);
+    return date.charAt(0).toUpperCase() + date.slice(1);
+  },
+  /** "2026-12-02": the same date, for the `datetime` attribute. */
+  isoDate: (now: Date, timeZone: string) =>
+    new Intl.DateTimeFormat("en-CA", { timeZone }).format(now),
   /** "le 7 décembre à 09:00" */
   unlocksOn: (day: number, month: number, year: number, time: string) => {
     const date = new Intl.DateTimeFormat("fr-FR", {

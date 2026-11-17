@@ -31,6 +31,7 @@ function makeApp(
     throttle: new LoginThrottle(() => NOW.getTime()),
     clientScript: "",
     style: "",
+    fonts: new Map([["nunito.woff2", new Uint8Array([119, 79, 70, 50])]]),
     now: () => NOW,
   });
 }
@@ -127,6 +128,36 @@ describe("login", () => {
   });
 });
 
+describe("header", () => {
+  it("shows the title, today's date, the bell and the logout", async () => {
+    const app = makeApp();
+    const cookie = await cookieFor(app, "guest password");
+    const page = await (
+      await app.request(`${ORIGIN}/`, { headers: { cookie } })
+    ).text();
+    // The title of examples/content/calendar.json, its apostrophe escaped.
+    expect(page).toContain(
+      '<h1 class="header-title">Calendrier de l&#39;Avent</h1>',
+    );
+    expect(page).toContain('<time class="header-date" datetime="2026-12-02">');
+    expect(page).toContain("Mer. 2 déc.");
+    expect(page).toContain('<button type="button" class="notify" hidden="">');
+    expect(page).not.toContain("author-badge");
+    // The visitor's logout keeps its label on every screen.
+    expect(page).toContain("<span>Se déconnecter</span>");
+  });
+
+  it("gives the author a badge and an icon-only logout on phones", async () => {
+    const app = makeApp();
+    const cookie = await cookieFor(app, "author password");
+    const page = await (
+      await app.request(`${ORIGIN}/`, { headers: { cookie } })
+    ).text();
+    expect(page).toContain('class="author-badge"');
+    expect(page).toContain('<span class="header-label">Se déconnecter</span>');
+  });
+});
+
 describe("days", () => {
   it("answers 401 to a signed-out visitor", async () => {
     const response = await makeApp().request(`${ORIGIN}/api/days/1`);
@@ -204,6 +235,18 @@ describe("other routes", () => {
   it("answers the health check without a session", async () => {
     const response = await makeApp().request(`${ORIGIN}/healthz`);
     expect(await response.text()).toBe("ok");
+  });
+
+  it("serves the fonts without a session, and no other file", async () => {
+    const app = makeApp();
+    const font = await app.request(`${ORIGIN}/static/fonts/nunito.woff2`);
+    expect(font.status).toBe(200);
+    expect(font.headers.get("content-type")).toBe("font/woff2");
+    expect(new Uint8Array(await font.arrayBuffer())).toEqual(
+      new Uint8Array([119, 79, 70, 50]),
+    );
+    const other = await app.request(`${ORIGIN}/static/fonts/..%2Fstyle.css`);
+    expect(other.status).toBe(404);
   });
 
   it("sends a content security policy", async () => {

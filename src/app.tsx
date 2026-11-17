@@ -28,6 +28,8 @@ export interface AppDeps {
   throttle: LoginThrottle;
   clientScript: string;
   style: string;
+  /** The font files of `assets/fonts/`, by file name. */
+  fonts: ReadonlyMap<string, Uint8Array<ArrayBuffer>>;
   /** The current time; tests replace it. */
   now?: () => Date;
 }
@@ -98,6 +100,12 @@ export function createApp(deps: AppDeps): Hono<Env> {
       "Content-Type": "text/javascript; charset=UTF-8",
     }),
   );
+  // Public like the stylesheet: the login page uses the fonts too.
+  app.get("/static/fonts/:file", (c) => {
+    const font = deps.fonts.get(c.req.param("file"));
+    if (font === undefined) return c.notFound();
+    return c.body(font, 200, { "Content-Type": "font/woff2" });
+  });
 
   const readRole = async (c: Context<Env>): Promise<Role | null> => {
     const value = await getSignedCookie(c, deps.sessionSecret, SESSION_COOKIE);

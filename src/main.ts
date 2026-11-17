@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { createApp } from "./app.tsx";
 import { LoginThrottle } from "./auth/throttle.ts";
-import { loadClientScript, loadStyle } from "./client-script.ts";
+import { loadClientScript, loadFonts, loadStyle } from "./client-script.ts";
 import { ConfigError, readConfig } from "./config.ts";
 import { readSettings, SettingsError } from "./settings.ts";
 
@@ -31,6 +31,7 @@ const app = createApp({
   throttle: new LoginThrottle(),
   clientScript: loadClientScript(),
   style: loadStyle(),
+  fonts: loadFonts(),
 });
 
 const server = serve(

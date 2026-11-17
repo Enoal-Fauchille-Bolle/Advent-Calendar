@@ -25,3 +25,16 @@ export function loadClientScript(): string {
 export function loadStyle(): string {
   return readFileSync(new URL("../assets/style.css", import.meta.url), "utf8");
 }
+
+/** The font files the stylesheet loads, by the name it uses in their URL. */
+export const FONT_FILES = ["fraunces.woff2", "nunito.woff2"] as const;
+
+/** Each font of `assets/fonts/`, read once at start like the stylesheet. */
+export function loadFonts(): ReadonlyMap<string, Uint8Array<ArrayBuffer>> {
+  return new Map(
+    FONT_FILES.map((name) => [
+      name,
+      readFileSync(new URL(`../assets/fonts/${name}`, import.meta.url)),
+    ]),
+  );
+}

@@ -8,6 +8,26 @@ import { Layout } from "./layout.tsx";
 /** Number of door patterns in the stylesheet (`.door--p0` to `.door--p5`). */
 const PATTERNS = 6;
 
+/** A bell, for the notifications button. */
+const BELL = ["M6 16V11a6 6 0 0 1 12 0v5l2 2H4z", "M10 20a2 2 0 0 0 4 0"];
+/** A door with an arrow going out, for the logout button. */
+const DOOR_OUT = [
+  "M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4",
+  "M10 16l-4-4 4-4",
+  "M6 12h10",
+];
+
+/** A line icon drawn in the text colour; the button's text names it. */
+function Icon({ paths }: { paths: readonly string[] }) {
+  return (
+    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths.map((d) => (
+        <path d={d} />
+      ))}
+    </svg>
+  );
+}
+
 export function CalendarPage({
   settings,
   role,
@@ -35,11 +55,38 @@ export function CalendarPage({
           </p>
         </div>
       )}
+      <header class="site-header">
+        <div class="header-bar">
+          <time
+            class="header-date"
+            datetime={strings.isoDate(now, settings.timezone)}
+          >
+            {strings.shortDate(now, settings.timezone)}
+          </time>
+          {role === "author" ? (
+            <span class="author-badge">
+              <span aria-hidden="true">{strings.calendar.authorBadge}</span>
+              <span class="visually-hidden">{strings.calendar.authorMode}</span>
+            </span>
+          ) : null}
+          {/* Hidden until the browser script finds that notifications can be asked. */}
+          <button type="button" class="notify" hidden>
+            <Icon paths={BELL} />
+            <span class="header-label">{strings.calendar.notifications}</span>
+          </button>
+          <form method="post" action="/logout" class="logout">
+            <button type="submit">
+              <Icon paths={DOOR_OUT} />
+              {/* In author mode the badge takes room: phones get the icon alone. */}
+              <span class={role === "author" ? "header-label" : undefined}>
+                {strings.calendar.logout}
+              </span>
+            </button>
+          </form>
+        </div>
+        <h1 class="header-title">{settings.title}</h1>
+      </header>
       <main class="calendar">
-        <h1 class="visually-hidden">{settings.title}</h1>
-        {role === "author" ? (
-          <p class="author-note">{strings.calendar.authorMode}</p>
-        ) : null}
         <div class="doors">
           {calendarDays(settings).map((day) => {
             const open = isUnlocked(day, settings, now);
@@ -62,9 +109,6 @@ export function CalendarPage({
             );
           })}
         </div>
-        <form method="post" action="/logout" class="logout">
-          <button type="submit">{strings.calendar.logout}</button>
-        </form>
       </main>
       {/* closedby="any": a tap outside the dialog closes it too ("light dismiss"). */}
       <dialog id="day-dialog" class="day-dialog" closedby="any">

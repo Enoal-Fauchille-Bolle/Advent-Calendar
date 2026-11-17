@@ -148,3 +148,5 @@ Commits follow Conventional Commits, checked by commitlint in a Git hook.
 ## License
 
 MIT, see [LICENSE](LICENSE).
+
+The fonts in `assets/fonts/`, Fraunces and Nunito, are under the SIL Open Font License 1.1: see [OFL-Fraunces.txt](assets/fonts/OFL-Fraunces.txt) and [OFL-Nunito.txt](assets/fonts/OFL-Nunito.txt).

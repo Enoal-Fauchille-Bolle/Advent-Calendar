@@ -22,6 +22,7 @@ interface ClientStrings {
   empty: string;
   error: string;
   voucher: string;
+  notificationsBlocked: string;
 }
 
 const strings = JSON.parse(
@@ -269,4 +270,25 @@ document.addEventListener("click", (event) => {
   if (!(target instanceof Element)) return;
   const door = target.closest<HTMLButtonElement>("button.door");
   if (door !== null) void openDoor(door);
+});
+
+// The bell asks the browser's permission for notifications; nothing is sent yet.
+// It shows while the answer is pending ("default") or refused ("denied"): after a
+// refusal the browser asks no more, so a tap explains how to allow them again.
+// `data-permission` lets the stylesheet animate the bell only while it waits.
+const bell = document.querySelector<HTMLButtonElement>("button.notify");
+
+function updateBell(): void {
+  if (bell === null || !("Notification" in window)) return;
+  bell.dataset.permission = Notification.permission;
+  bell.hidden = Notification.permission === "granted";
+}
+
+updateBell();
+bell?.addEventListener("click", () => {
+  if (Notification.permission === "denied") {
+    showMessage(strings.notificationsBlocked);
+    return;
+  }
+  void Notification.requestPermission().then(updateBell);
 });
