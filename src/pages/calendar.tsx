@@ -67,7 +67,14 @@ export function CalendarPage({
         </form>
       </main>
       <dialog id="day-dialog" class="day-dialog">
-        <div class="day-content" aria-live="polite"></div>
+        {/* Focus starts here, at the top: by default it goes to the first control,
+            the player or the close button, and a tall day would open scrolled down. */}
+        <div
+          class="day-content"
+          aria-live="polite"
+          tabindex={-1}
+          autofocus
+        ></div>
         <form method="dialog">
           <button type="submit">{strings.calendar.close}</button>
         </form>

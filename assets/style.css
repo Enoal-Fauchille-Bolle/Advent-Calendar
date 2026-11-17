@@ -364,6 +364,11 @@ button {
   color: var(--ink);
 }
 
+/* Holds the focus when the dialog opens, but is not a control: no outline. */
+.day-content:focus {
+  outline: none;
+}
+
 .day-dialog::backdrop {
   background: rgb(58 20 32 / 0.55);
 }
