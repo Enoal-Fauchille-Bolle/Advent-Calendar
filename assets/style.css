@@ -28,8 +28,54 @@
   --mustard: #d9b44a;
   --cream: #efe2c8;
   --card: #fffdf8;
+  /* Titles and lines on paper or card; wine stays the fill of buttons and ribbons. */
+  --accent: #7a1f3d;
+  --muted: #6b3d4a;
+  --on-wine: #fffdf8;
+  --field: #fffdf8;
+  /* Gingham stripes: wrapping paper, then the lighter header. */
+  --check: rgb(122 31 61 / 0.35);
+  --check-soft: rgb(122 31 61 / 0.12);
+  --ribbon-edge: rgb(255 253 248 / 0.5);
+  --error-bg: rgb(242 196 207 / 0.6);
+  --tag-shadow: rgb(58 20 32 / 0.28);
+  --door-shadow: rgb(58 20 32 / 0.2);
+  --backdrop: rgb(58 20 32 / 0.55);
   --radius: 10px;
-  color-scheme: light;
+  color-scheme: light dark;
+}
+
+/* Dark mode follows the system setting: a wine night. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #1c0d13;
+    --card: #2a1720;
+    --ink: #f4e8dc;
+    --accent: #f0a3b6;
+    --muted: #d9b8c2;
+    --on-wine: #fbeef2;
+    --field: #1c0d13;
+    --check: rgb(240 163 182 / 0.16);
+    --check-soft: rgb(240 163 182 / 0.08);
+    --ribbon-edge: rgb(0 0 0 / 0.25);
+    --error-bg: rgb(240 163 182 / 0.15);
+    --tag-shadow: rgb(0 0 0 / 0.5);
+    --door-shadow: rgb(0 0 0 / 0.45);
+    --backdrop: rgb(0 0 0 / 0.65);
+  }
+
+  /* Closed doors keep their daytime wrapping paper, as does the copy that moves away
+     while a door opens. */
+  .door:not([data-opened="true"]),
+  .door-face {
+    --card: #fffdf8;
+    --accent: #7a1f3d;
+    --check: rgb(122 31 61 / 0.35);
+  }
+
+  .gift::before {
+    opacity: 1;
+  }
 }
 
 * {
@@ -85,23 +131,15 @@ button {
   content: "";
   opacity: 0.55;
   background:
-    repeating-linear-gradient(
-      0deg,
-      rgb(122 31 61 / 0.35) 0 8px,
-      transparent 8px 16px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgb(122 31 61 / 0.35) 0 8px,
-      transparent 8px 16px
-    ),
+    repeating-linear-gradient(0deg, var(--check) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(90deg, var(--check) 0 8px, transparent 8px 16px),
     var(--card);
 }
 
 .ribbon {
   position: absolute;
   background: var(--wine);
-  box-shadow: 0 0 0 3px rgb(255 253 248 / 0.5);
+  box-shadow: 0 0 0 3px var(--ribbon-edge);
 }
 
 .ribbon--down {
@@ -173,7 +211,7 @@ button {
   padding: 2.4rem 1.4rem 1.4rem;
   border-radius: 14px;
   background: var(--card);
-  box-shadow: 0 10px 24px rgb(58 20 32 / 0.28);
+  box-shadow: 0 10px 24px var(--tag-shadow);
   clip-path: polygon(14% 0, 86% 0, 100% 9%, 100% 100%, 0 100%, 0 9%);
 }
 
@@ -193,7 +231,7 @@ button {
 
 .login-tag h1 {
   margin: 0 0 1rem;
-  color: var(--wine);
+  color: var(--accent);
   font-size: 1.6rem;
   line-height: 1.2;
   text-align: center;
@@ -207,9 +245,10 @@ button {
 .login-form input {
   font: inherit;
   padding: 0.75rem;
-  border: 2px solid var(--wine);
+  border: 2px solid var(--accent);
   border-radius: var(--radius);
-  background: var(--card);
+  background: var(--field);
+  color: inherit;
 }
 
 .login-form button,
@@ -218,7 +257,7 @@ button {
   border: 0;
   border-radius: var(--radius);
   background: var(--wine);
-  color: var(--card);
+  color: var(--on-wine);
 }
 
 /* A note under the field, apart from the title's look. */
@@ -226,8 +265,8 @@ button {
   margin: 0;
   padding: 0.4rem 0.6rem;
   border-radius: var(--radius);
-  background: rgb(242 196 207 / 0.6);
-  color: var(--wine);
+  background: var(--error-bg);
+  color: var(--accent);
   font-size: 0.9rem;
 }
 
@@ -236,7 +275,7 @@ button {
 .banner {
   overflow: hidden;
   background: var(--wine);
-  color: var(--card);
+  color: var(--on-wine);
   font-size: 1.25rem;
   white-space: nowrap;
 }
@@ -273,12 +312,12 @@ button {
   background:
     repeating-linear-gradient(
       0deg,
-      rgb(122 31 61 / 0.12) 0 8px,
+      var(--check-soft) 0 8px,
       transparent 8px 16px
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(122 31 61 / 0.12) 0 8px,
+      var(--check-soft) 0 8px,
       transparent 8px 16px
     ),
     var(--card);
@@ -291,7 +330,7 @@ button {
 }
 
 .header-date {
-  color: #6b3d4a;
+  color: var(--muted);
   font-size: 0.95rem;
   font-weight: bold;
   white-space: nowrap;
@@ -301,6 +340,8 @@ button {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background: var(--mustard);
+  /* Dark text on mustard in both modes. */
+  color: #3a1420;
   font-size: 0.8rem;
   font-weight: bold;
 }
@@ -330,9 +371,9 @@ button {
 .notify {
   width: 34px;
   padding: 0;
-  border: 2px solid var(--wine);
+  border: 2px solid var(--accent);
   background: var(--card);
-  color: var(--wine);
+  color: var(--accent);
 }
 
 .notify[hidden] {
@@ -343,7 +384,7 @@ button {
   padding: 0.35rem 0.75rem;
   border: 0;
   background: var(--wine);
-  color: var(--card);
+  color: var(--on-wine);
 }
 
 /* A label that phones only give to screen readers: there, the icon stands alone. */
@@ -406,7 +447,7 @@ button {
 
 .header-title {
   margin: 0.35rem 0 0;
-  color: var(--wine);
+  color: var(--accent);
   font-size: 1.75rem;
   line-height: 1.15;
 }
@@ -465,7 +506,7 @@ button {
   place-items: center;
   border: 0;
   border-radius: 4px;
-  box-shadow: 0 2px 6px rgb(58 20 32 / 0.2);
+  box-shadow: 0 2px 6px var(--door-shadow);
   transition: transform 0.15s ease;
 }
 
@@ -501,10 +542,10 @@ button {
   place-items: center;
   min-width: 3.25rem;
   padding: 0.25rem 0.6rem;
-  border: 2px solid var(--wine);
+  border: 2px solid var(--accent);
   border-radius: 999px;
   background: var(--card);
-  color: var(--wine);
+  color: var(--accent);
   font-size: 1.75rem;
   font-weight: bold;
 }
@@ -515,16 +556,8 @@ button {
 .door--p0 .door-face {
   /* Gingham */
   background:
-    repeating-linear-gradient(
-      0deg,
-      rgb(122 31 61 / 0.35) 0 8px,
-      transparent 8px 16px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgb(122 31 61 / 0.35) 0 8px,
-      transparent 8px 16px
-    ),
+    repeating-linear-gradient(0deg, var(--check) 0 8px, transparent 8px 16px),
+    repeating-linear-gradient(90deg, var(--check) 0 8px, transparent 8px 16px),
     var(--card);
 }
 
@@ -824,7 +857,7 @@ button {
 }
 
 .preview-title {
-  color: var(--wine);
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -841,13 +874,13 @@ button {
 .preview-voucher {
   display: grid;
   padding: 0.4rem;
-  border: 2px dashed var(--wine);
+  border: 2px dashed var(--accent);
   border-radius: var(--radius);
   text-align: center;
 }
 
 .preview-voucher .voucher-title {
-  color: var(--wine);
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -858,7 +891,7 @@ button {
 }
 
 .preview-audio {
-  color: var(--wine);
+  color: var(--accent);
   font-weight: bold;
 }
 
@@ -900,7 +933,7 @@ html:has(.day-dialog[open]) {
 }
 
 .day-dialog::backdrop {
-  background: rgb(58 20 32 / 0.55);
+  background: var(--backdrop);
 }
 
 .day-dialog form {
@@ -910,7 +943,7 @@ html:has(.day-dialog[open]) {
 
 .day-title {
   margin-top: 0;
-  color: var(--wine);
+  color: var(--accent);
 }
 
 .door-message {
@@ -934,7 +967,7 @@ html:has(.day-dialog[open]) {
 
 .block-voucher {
   padding: 1rem;
-  border: 2px dashed var(--wine);
+  border: 2px dashed var(--accent);
   border-radius: var(--radius);
   text-align: center;
 }
@@ -948,7 +981,7 @@ html:has(.day-dialog[open]) {
 
 .voucher-title {
   margin: 0.25rem 0;
-  color: var(--wine);
+  color: var(--accent);
 }
 
 .block-image img {
