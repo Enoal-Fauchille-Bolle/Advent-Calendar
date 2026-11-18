@@ -649,7 +649,16 @@ button {
   animation-timing-function: cubic-bezier(0.3, 0.1, 0.3, 1);
 }
 
-/* Swing: one door on a hinge at its left. */
+/* Swing: one door on a hinge at its left. The depth grows with the door (4.5 times
+   its width, 500px on a phone): a fixed one let wide desktop doors fill the screen. */
+.door:has(.door-cover--swing) {
+  container-type: inline-size;
+}
+
+.door-cover--swing {
+  perspective: 450cqw;
+}
+
 .door-cover--swing .door-face {
   transform-origin: left center;
 }
