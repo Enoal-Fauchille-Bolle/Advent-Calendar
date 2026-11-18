@@ -165,15 +165,12 @@ button {
   width: 2px;
   height: 90px;
   background: var(--mustard);
-  transform: rotate(-3deg);
-  transform-origin: top;
 }
 
 .login-tag {
   position: relative;
   width: min(300px, 100%);
   padding: 2.4rem 1.4rem 1.4rem;
-  transform: rotate(-3deg);
   border-radius: 14px;
   background: var(--card);
   box-shadow: 0 10px 24px rgb(58 20 32 / 0.28);
