@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.tsx";
 import { hashPassword } from "./auth/password.ts";
 import { LoginThrottle } from "./auth/throttle.ts";
-import { readSettings } from "./settings.ts";
+import { type DoorAnimation, readSettings } from "./settings.ts";
 
 const ORIGIN = "http://localhost";
 const CONTENT = "examples/content";
@@ -21,9 +21,10 @@ beforeAll(async () => {
 
 function makeApp(
   sizes: Record<string, "small" | "tall" | "wide" | "big"> = {},
+  animations: Record<string, DoorAnimation> = {},
 ) {
   return createApp({
-    settings: { ...readSettings(CONTENT), sizes },
+    settings: { ...readSettings(CONTENT), sizes, animations },
     contentDir: CONTENT,
     passwordHash,
     authorPasswordHash,
@@ -94,6 +95,16 @@ describe("login", () => {
     expect(await response.text()).toMatch(
       /class="door door--big door--p\d" data-day="1"/,
     );
+  });
+
+  it("gives each door its opening animation", async () => {
+    const app = makeApp({}, { "2": "none" });
+    const cookie = await cookieFor(app, "guest password");
+    const response = await app.request(`${ORIGIN}/`, { headers: { cookie } });
+    const page = await response.text();
+    // Door 2 from the settings, door 1 from the default rule.
+    expect(page).toContain('data-day="2" data-animation="none"');
+    expect(page).toContain('data-day="1" data-animation="tear"');
   });
 
   it("slows down guessing after five failures", async () => {

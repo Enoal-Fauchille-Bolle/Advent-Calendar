@@ -24,17 +24,18 @@ content/
 
 ### `calendar.json`
 
-| Key          | Meaning                                                      | Example           |
-| ------------ | ------------------------------------------------------------ | ----------------- |
-| `title`      | Page title                                                   | `"Calendrier"`    |
-| `banner`     | Scrolling text at the top; `""` or absent hides it           | `"Joyeux Noël ★"` |
-| `year`       | Year of the calendar                                         | `2026`            |
-| `month`      | Month, 1 to 12                                               | `12`              |
-| `firstDay`   | First door                                                   | `1`               |
-| `lastDay`    | Last door                                                    | `25`              |
-| `timezone`   | IANA time zone the unlock time is read in                    | `"Europe/Paris"`  |
-| `unlockTime` | Local time at which door N opens on day N, `HH:MM`, 24 hours | `"09:00"`         |
-| `sizes`      | Door sizes chosen by hand, by door number (see below)        | `{ "5": "big" }`  |
+| Key          | Meaning                                                       | Example           |
+| ------------ | ------------------------------------------------------------- | ----------------- |
+| `title`      | Page title                                                    | `"Calendrier"`    |
+| `banner`     | Scrolling text at the top; `""` or absent hides it            | `"Joyeux Noël ★"` |
+| `year`       | Year of the calendar                                          | `2026`            |
+| `month`      | Month, 1 to 12                                                | `12`              |
+| `firstDay`   | First door                                                    | `1`               |
+| `lastDay`    | Last door                                                     | `25`              |
+| `timezone`   | IANA time zone the unlock time is read in                     | `"Europe/Paris"`  |
+| `unlockTime` | Local time at which door N opens on day N, `HH:MM`, 24 hours  | `"09:00"`         |
+| `sizes`      | Door sizes chosen by hand, by door number (see below)         | `{ "5": "big" }`  |
+| `animations` | Opening animations chosen by hand, by door number (see below) | `{ "7": "tear" }` |
 
 The server reads `calendar.json` once at start: restart it after a change. Day folders are read on each request, so a day can be added or fixed while the server runs.
 
@@ -79,6 +80,21 @@ The size comes from the day's first block:
 | `image`, roughly square    | `big`   |
 
 A photo counts as landscape when its width is at least 1.25 times its height, and as portrait the other way round. A door with no folder, a broken `day.json` or an unreadable photo is `small`. `sizes` in `calendar.json` overrides any door. An opened door is remembered in the browser that opened it.
+
+### Door animations
+
+A door plays an animation the first time it opens in a browser:
+
+| Name     | Motion                                     |
+| -------- | ------------------------------------------ |
+| `swing`  | Swings open on a hinge at its left         |
+| `double` | Opens as two halves from the middle        |
+| `tear`   | Rips along a zigzag; both pieces fall away |
+| `lid`    | Lifts off like a box lid and fades         |
+| `fade`   | Fades into its preview                     |
+| `none`   | No animation: the preview shows at once    |
+
+`animations` in `calendar.json` chooses one per door. Any other door takes one of the first five from its number, so two days in a row never share one, and author mode shows the same one the guest will see. A door opened on an earlier visit shows open at once, and so does every door when the device asks for reduced motion.
 
 ## Configuration
 

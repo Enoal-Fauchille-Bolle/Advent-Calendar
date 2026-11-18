@@ -233,13 +233,67 @@ function fill(door: HTMLButtonElement, shown: ShownDay): void {
   door.dataset.opened = "true";
 }
 
+/** The pieces of the closed door each opening animation moves. */
+const PIECES: Partial<Record<string, readonly string[]>> = {
+  swing: ["whole"],
+  double: ["left", "right"],
+  tear: ["left", "right"],
+  lid: ["whole"],
+  fade: ["whole"],
+};
+
+/** Waits for a photo in the door to be ready, two seconds at most. */
+async function photoReady(door: HTMLButtonElement): Promise<void> {
+  const photo = door.querySelector<HTMLImageElement>(".door-preview img");
+  if (photo === null) return;
+  await Promise.race([
+    photo.decode().catch(() => undefined),
+    new Promise((resolve) => setTimeout(resolve, 2000)),
+  ]);
+}
+
+/**
+ * Opens a door for the first time: a copy of the closed door covers its preview and
+ * moves away (the stylesheet draws the motion, or none under reduced motion).
+ */
+async function openFirstTime(
+  door: HTMLButtonElement,
+  shown: ShownDay,
+): Promise<void> {
+  const animation = door.dataset.animation ?? "none";
+  const pieces = PIECES[animation];
+  if (pieces === undefined) {
+    fill(door, shown);
+    return;
+  }
+  const number = door.querySelector(".door-number")?.textContent ?? "";
+  const cover = element("span", `door-cover door-cover--${animation}`);
+  cover.setAttribute("aria-hidden", "true");
+  for (const piece of pieces) {
+    const face = element("span", `door-face door-face--${piece}`);
+    face.append(element("span", "door-number", number));
+    cover.append(face);
+  }
+  door.append(cover);
+  fill(door, shown);
+  await photoReady(door);
+  door.dataset.animating = animation;
+  await Promise.allSettled(
+    door.getAnimations({ subtree: true }).map((running) => running.finished),
+  );
+  cover.remove();
+  delete door.dataset.animating;
+}
+
 async function openDoor(door: HTMLButtonElement): Promise<void> {
   const day = door.dataset.day ?? "";
   if (door.dataset.state === "locked") {
     showMessage(lockedMessage(door));
     return;
   }
-  if (door.dataset.loading === "true") return;
+  if (door.dataset.loading === "true" || door.dataset.opening === "true") {
+    return;
+  }
   door.dataset.loading = "true";
   const shown = await fetchDay(day);
   delete door.dataset.loading;
@@ -248,8 +302,11 @@ async function openDoor(door: HTMLButtonElement): Promise<void> {
   else if (shown === "error") showMessage(strings.error);
   else if (door.dataset.opened === "true") showDay(shown);
   else {
-    fill(door, shown);
     remember(day);
+    // A tap during the opening waits for its end before showing the dialog.
+    door.dataset.opening = "true";
+    await openFirstTime(door, shown);
+    delete door.dataset.opening;
   }
 }
 

@@ -511,7 +511,8 @@ button {
 
 /* Door patterns, drawn with gradients. */
 
-.door--p0 {
+.door--p0,
+.door--p0 .door-face {
   /* Gingham */
   background:
     repeating-linear-gradient(
@@ -527,13 +528,15 @@ button {
     var(--card);
 }
 
-.door--p1 {
+.door--p1,
+.door--p1 .door-face {
   /* Checkerboard */
   background: repeating-conic-gradient(var(--pine) 0 25%, var(--cream) 0 50%) 0
     0 / 22px 22px;
 }
 
-.door--p2 {
+.door--p2,
+.door--p2 .door-face {
   /* Stripes */
   background: repeating-linear-gradient(
     45deg,
@@ -542,18 +545,21 @@ button {
   );
 }
 
-.door--p3 {
+.door--p3,
+.door--p3 .door-face {
   /* Dots */
   background:
     radial-gradient(var(--wine) 2px, transparent 3px) 0 0 / 16px 16px,
     var(--sky);
 }
 
-.door--p4 {
+.door--p4,
+.door--p4 .door-face {
   background: var(--mustard);
 }
 
-.door--p5 {
+.door--p5,
+.door--p5 .door-face {
   background: var(--pine);
 }
 
@@ -572,7 +578,8 @@ button {
   text-align: left;
 }
 
-.door[data-opened="true"] .door-number {
+/* The door's own number; the copy laid over it while it opens keeps its full size. */
+.door[data-opened="true"] > .door-number {
   position: absolute;
   top: 0.3rem;
   left: 0.3rem;
@@ -605,10 +612,206 @@ button {
   position: absolute;
   inset: 0;
   display: block;
+  /* The door's own clipping is lifted while it opens. */
+  border-radius: 4px;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
+}
+
+/* Opening animations. On a door's first opening, a copy of the closed door covers the
+   preview and moves away; the script removes it once its motion ends. Tear, lid and
+   swing reach a little past the tile, so the door stops clipping and draws above its
+   neighbours meanwhile. */
+
+.door[data-animating] {
+  z-index: 2;
+  overflow: visible;
+}
+
+.door-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  perspective: 500px;
+  pointer-events: none;
+}
+
+.door-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  animation-duration: 0.9s;
+  animation-fill-mode: both;
+  animation-timing-function: cubic-bezier(0.3, 0.1, 0.3, 1);
+}
+
+/* Swing: one door on a hinge at its left. */
+.door-cover--swing .door-face {
+  transform-origin: left center;
+}
+
+.door[data-animating="swing"] .door-face {
+  animation-name: door-swing;
+}
+
+@keyframes door-swing {
+  80% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(-105deg);
+    opacity: 0;
+  }
+}
+
+/* Double: two halves, each on a hinge at its outer edge. */
+.door-cover--double .door-face--left {
+  clip-path: inset(0 50% 0 0);
+  transform-origin: left center;
+}
+
+.door-cover--double .door-face--right {
+  clip-path: inset(0 0 0 50%);
+  transform-origin: right center;
+}
+
+.door[data-animating="double"] .door-face--left {
+  animation-name: door-double-left;
+}
+
+.door[data-animating="double"] .door-face--right {
+  animation-name: door-double-right;
+}
+
+@keyframes door-double-left {
+  80% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(-105deg);
+    opacity: 0;
+  }
+}
+
+@keyframes door-double-right {
+  80% {
+    opacity: 1;
+  }
+  to {
+    transform: rotateY(105deg);
+    opacity: 0;
+  }
+}
+
+/* Tear: the wrapping paper rips along a zigzag and both pieces fall away. */
+.door-cover--tear .door-face--left {
+  clip-path: polygon(
+    0 0,
+    52% 0,
+    44% 18%,
+    56% 36%,
+    44% 54%,
+    56% 72%,
+    44% 90%,
+    50% 100%,
+    0 100%
+  );
+}
+
+.door-cover--tear .door-face--right {
+  clip-path: polygon(
+    52% 0,
+    100% 0,
+    100% 100%,
+    50% 100%,
+    44% 90%,
+    56% 72%,
+    44% 54%,
+    56% 36%,
+    44% 18%
+  );
+}
+
+.door[data-animating="tear"] .door-face {
+  animation-timing-function: cubic-bezier(0.5, 0, 0.8, 0.6);
+}
+
+.door[data-animating="tear"] .door-face--left {
+  animation-name: door-tear-left;
+}
+
+.door[data-animating="tear"] .door-face--right {
+  animation-name: door-tear-right;
+}
+
+@keyframes door-tear-left {
+  25% {
+    transform: translate(-3px, 0) rotate(-2deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-40px, 60px) rotate(-25deg);
+    opacity: 0;
+  }
+}
+
+@keyframes door-tear-right {
+  25% {
+    transform: translate(3px, 0) rotate(2deg);
+    opacity: 1;
+  }
+  to {
+    transform: translate(40px, 60px) rotate(25deg);
+    opacity: 0;
+  }
+}
+
+/* Lid: the door lifts off like the lid of a box and fades. */
+.door[data-animating="lid"] .door-face {
+  animation-name: door-lid;
+}
+
+@keyframes door-lid {
+  50% {
+    transform: translateY(-14px) rotate(-4deg) scale(1.04);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-36px) rotate(-8deg) scale(1.08);
+    opacity: 0;
+  }
+}
+
+/* Fade: the door fades while its preview settles in. */
+.door[data-animating="fade"] .door-face {
+  animation-name: door-fade;
+}
+
+.door[data-animating="fade"] .door-preview {
+  animation: door-settle 0.9s cubic-bezier(0.3, 0.1, 0.3, 1) both;
+}
+
+@keyframes door-fade {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes door-settle {
+  from {
+    transform: scale(0.94);
+  }
+}
+
+/* Reduced motion: no cover, the preview shows at once. */
+@media (prefers-reduced-motion: reduce) {
+  .door-cover {
+    display: none;
+  }
 }
 
 .preview-title {

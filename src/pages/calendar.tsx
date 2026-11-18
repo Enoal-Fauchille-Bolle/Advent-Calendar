@@ -1,6 +1,6 @@
 import { raw } from "hono/html";
 import type { Role } from "../auth/session.ts";
-import type { DoorSize, Settings } from "../settings.ts";
+import { doorAnimation, type DoorSize, type Settings } from "../settings.ts";
 import { strings } from "../strings.ts";
 import { calendarDays, isUnlocked } from "../unlock.ts";
 import { Layout } from "./layout.tsx";
@@ -95,6 +95,7 @@ export function CalendarPage({
                 type="button"
                 class={`door door--${sizes.get(day) ?? "small"} door--p${String((day * 5) % PATTERNS)}`}
                 data-day={String(day)}
+                data-animation={doorAnimation(settings, day)}
                 data-state={open || role === "author" ? "open" : "locked"}
                 data-unlocks={strings.unlocksOn(
                   day,

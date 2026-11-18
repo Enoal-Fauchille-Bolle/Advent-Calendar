@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { parseSettings, readSettings, SettingsError } from "./settings.ts";
+import {
+  doorAnimation,
+  parseSettings,
+  readSettings,
+  SettingsError,
+} from "./settings.ts";
 
 const valid = {
   title: "Test",
@@ -12,13 +17,25 @@ const valid = {
 };
 
 describe("parseSettings", () => {
-  it("accepts valid settings and defaults the banner and sizes to empty", () => {
-    expect(parseSettings(valid)).toEqual({ ...valid, banner: "", sizes: {} });
+  it("accepts valid settings and defaults the banner, sizes and animations to empty", () => {
+    expect(parseSettings(valid)).toEqual({
+      ...valid,
+      banner: "",
+      sizes: {},
+      animations: {},
+    });
   });
 
   it("accepts door sizes chosen by hand", () => {
     const sizes = { "1": "big", "25": "wide" };
     expect(parseSettings({ ...valid, sizes }).sizes).toEqual(sizes);
+  });
+
+  it("accepts door animations chosen by hand, none included", () => {
+    const animations = { "3": "tear", "25": "none" };
+    expect(parseSettings({ ...valid, animations }).animations).toEqual(
+      animations,
+    );
   });
 
   it.each([
@@ -32,8 +49,30 @@ describe("parseSettings", () => {
     ["an unknown door size", { sizes: { "1": "huge" } }],
     ["a size for a door out of range", { sizes: { "26": "big" } }],
     ["a door number with a leading zero", { sizes: { "05": "big" } }],
+    ["an unknown animation", { animations: { "1": "explode" } }],
+    ["an animation for a door out of range", { animations: { "26": "fade" } }],
   ])("refuses %s", (_, change) => {
     expect(() => parseSettings({ ...valid, ...change })).toThrow(SettingsError);
+  });
+});
+
+describe("doorAnimation", () => {
+  it("uses the animation the settings give a door", () => {
+    const settings = parseSettings({ ...valid, animations: { "4": "none" } });
+    expect(doorAnimation(settings, 4)).toBe("none");
+  });
+
+  it("gives the other doors one of five, never the same two days in a row", () => {
+    const settings = parseSettings(valid);
+    const picked = Array.from({ length: 25 }, (_, i) =>
+      doorAnimation(settings, i + 1),
+    );
+    expect(new Set(picked)).toEqual(
+      new Set(["swing", "double", "tear", "lid", "fade"]),
+    );
+    for (let i = 1; i < picked.length; i++) {
+      expect(picked[i]).not.toBe(picked[i - 1]);
+    }
   });
 });
 
