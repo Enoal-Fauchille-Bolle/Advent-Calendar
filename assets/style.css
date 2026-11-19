@@ -346,13 +346,14 @@ button {
   font-weight: bold;
 }
 
-/* The bell and the logout go to the right end of the line. */
+/* The bell (or the test button that replaces it) and the logout go to the right end
+   of the line. */
 .notify,
 .logout {
   margin-left: auto;
 }
 
-.notify:not([hidden]) + .logout {
+.notify:not([hidden]) ~ .logout {
   margin-left: 0;
 }
 

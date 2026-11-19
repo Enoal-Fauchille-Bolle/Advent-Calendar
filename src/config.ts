@@ -1,9 +1,23 @@
+import { vapidPublicKey } from "./push/vapid.ts";
+
 export class ConfigError extends Error {}
+
+/** What web push needs; absent when no VAPID key is set, which turns push off. */
+export interface PushConfig {
+  privateKey: string;
+  /** Computed from the private key. */
+  publicKey: string;
+  /** A contact for the push services: an `https:` URL or a `mailto:` address. */
+  subject: string;
+}
 
 export interface Config {
   host: string;
   port: number;
   contentDir: string;
+  /** A folder the server may write: push subscriptions and the days already sent. */
+  stateDir: string;
+  push: PushConfig | undefined;
   /** Hash of the shared password, from `pnpm make-hash`. */
   passwordHash: string;
   /** Hash of the author password, which opens every door early; optional. */
@@ -56,6 +70,27 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     );
   }
 
+  // No private key, no push: the bell stays hidden and nothing is sent.
+  let push: PushConfig | undefined;
+  const privateKey = env.ADVENT_VAPID_PRIVATE_KEY ?? "";
+  if (privateKey !== "") {
+    let publicKey = "";
+    try {
+      publicKey = vapidPublicKey(privateKey);
+    } catch {
+      problems.push(
+        "ADVENT_VAPID_PRIVATE_KEY must be empty or the output of `pnpm make-vapid`",
+      );
+    }
+    const subject = env.ADVENT_VAPID_SUBJECT ?? "";
+    if (!/^(https:\/\/[^/\s]+|mailto:\S+@\S+)/.test(subject)) {
+      problems.push(
+        "ADVENT_VAPID_SUBJECT must be the site's https:// URL or a mailto: address when ADVENT_VAPID_PRIVATE_KEY is set",
+      );
+    }
+    push = { privateKey, publicKey, subject };
+  }
+
   if (problems.length > 0) {
     throw new ConfigError(`Invalid configuration:\n- ${problems.join("\n- ")}`);
   }
@@ -64,6 +99,8 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     host: env.ADVENT_HOST ?? "127.0.0.1",
     port,
     contentDir: env.ADVENT_CONTENT_DIR ?? "content",
+    stateDir: env.ADVENT_STATE_DIR ?? "state",
+    push,
     passwordHash,
     authorPasswordHash,
     sessionSecret,

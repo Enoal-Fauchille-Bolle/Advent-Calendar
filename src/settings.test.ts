@@ -26,6 +26,15 @@ describe("parseSettings", () => {
     });
   });
 
+  it("accepts a notification sentence and refuses an empty one", () => {
+    expect(
+      parseSettings({ ...valid, notification: "Porte {day}" }).notification,
+    ).toBe("Porte {day}");
+    expect(() => parseSettings({ ...valid, notification: "" })).toThrow(
+      SettingsError,
+    );
+  });
+
   it("accepts door sizes chosen by hand", () => {
     const sizes = { "1": "big", "25": "wide" };
     expect(parseSettings({ ...valid, sizes }).sizes).toEqual(sizes);

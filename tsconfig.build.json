@@ -8,5 +8,5 @@
     "outDir": "dist"
   },
   "include": ["src"],
-  "exclude": ["src/client", "src/**/*.test.ts", "src/**/*.test.tsx"]
+  "exclude": ["src/client", "src/sw", "src/**/*.test.ts", "src/**/*.test.tsx"]
 }

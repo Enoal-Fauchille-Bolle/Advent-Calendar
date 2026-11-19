@@ -10,6 +10,8 @@ const PATTERNS = 6;
 
 /** A bell, for the notifications button. */
 const BELL = ["M6 16V11a6 6 0 0 1 12 0v5l2 2H4z", "M10 20a2 2 0 0 0 4 0"];
+/** A paper plane, for the author's test notification. */
+const PLANE = ["M21 3 3 10.5l7 2.5 2.5 7z", "M21 3 10 13"];
 /** A door with an arrow going out, for the logout button. */
 const DOOR_OUT = [
   "M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4",
@@ -33,12 +35,15 @@ export function CalendarPage({
   role,
   now,
   sizes,
+  vapidKey,
 }: {
   settings: Settings;
   role: Role;
   now: Date;
   /** The tile size of each door; a door missing from it is small. */
   sizes: ReadonlyMap<number, DoorSize>;
+  /** The VAPID public key; absent when push is off, which leaves out the bell. */
+  vapidKey?: string | undefined;
 }) {
   // `<` cannot close the script element once escaped.
   const clientStrings = JSON.stringify(strings.client).replaceAll(
@@ -69,11 +74,36 @@ export function CalendarPage({
               <span class="visually-hidden">{strings.calendar.authorMode}</span>
             </span>
           ) : null}
-          {/* Hidden until the browser script finds that notifications can be asked. */}
-          <button type="button" class="notify" hidden>
-            <Icon paths={BELL} />
-            <span class="header-label">{strings.calendar.notifications}</span>
-          </button>
+          {vapidKey === undefined ? null : (
+            <>
+              {/* Hidden until the browser script finds that notifications can be asked. */}
+              <button
+                type="button"
+                class="notify"
+                data-vapid-key={vapidKey}
+                hidden
+              >
+                <Icon paths={BELL} />
+                <span class="header-label">
+                  {strings.calendar.notifications}
+                </span>
+              </button>
+              {/* In the bell's place once notifications are allowed. */}
+              {role === "author" ? (
+                <button
+                  type="button"
+                  class="notify notify-test"
+                  title={strings.calendar.notificationTest}
+                  hidden
+                >
+                  <Icon paths={PLANE} />
+                  <span class="header-label">
+                    {strings.calendar.notificationTest}
+                  </span>
+                </button>
+              ) : null}
+            </>
+          )}
           <form method="post" action="/logout" class="logout">
             <button type="submit">
               <Icon paths={DOOR_OUT} />

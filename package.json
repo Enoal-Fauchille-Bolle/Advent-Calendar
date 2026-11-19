@@ -9,12 +9,13 @@
     "node": ">=24"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && tsc -p src/client/tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && tsc -p src/client/tsconfig.build.json && tsc -p src/sw/tsconfig.build.json",
     "start": "node dist/main.js",
     "dev": "tsx watch src/main.ts",
     "make-hash": "node src/cli/hash-password.ts",
+    "make-vapid": "node src/cli/make-vapid.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm format:check && pnpm test",
-    "typecheck": "tsc --noEmit && tsc -p src/client --noEmit",
+    "typecheck": "tsc --noEmit && tsc -p src/client --noEmit && tsc -p src/sw --noEmit",
     "lint": "eslint .",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
@@ -26,6 +27,7 @@
     "@commitlint/config-conventional": "^21.2.4",
     "@eslint/js": "^10.0.1",
     "@types/node": "^26.6.6",
+    "@types/web-push": "3.6.4",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "lefthook": "^2.2.2",
@@ -39,6 +41,7 @@
     "@hono/node-server": "^2.1.6",
     "hono": "^4.13.16",
     "image-size": "2.0.4",
+    "web-push": "3.6.7",
     "zod": "^4.6.7"
   }
 }

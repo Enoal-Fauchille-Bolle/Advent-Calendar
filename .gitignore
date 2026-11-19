@@ -1,5 +1,6 @@
-# The real surprises and the secrets: never committed
+# The real surprises, the push subscriptions and the secrets: never committed
 /content/
+/state/
 .env
 .env.*
 

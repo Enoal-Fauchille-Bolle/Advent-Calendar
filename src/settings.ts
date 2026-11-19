@@ -70,6 +70,12 @@ const settingsSchema = z
     title: z.string().min(1),
     /** Scrolling text at the top of the page; empty hides the banner. */
     banner: z.string().default(""),
+    /**
+     * The notification sent when a door opens, `{day}` standing for its number; a
+     * day's own `notification` replaces it for that day. Absent: a sentence of
+     * `strings.ts`.
+     */
+    notification: z.string().min(1).optional(),
     year: z.int().min(2000).max(9999),
     month: z.int().min(1).max(12),
     firstDay: z.int().min(1).max(31),

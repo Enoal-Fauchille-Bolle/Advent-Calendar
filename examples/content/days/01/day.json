@@ -1,4 +1,5 @@
 {
   "title": "Une petite lettre",
+  "notification": "Une lettre t'attend ✉️",
   "blocks": [{ "type": "letter", "file": "letter.txt" }]
 }

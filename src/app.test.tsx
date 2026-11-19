@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from "vitest";
-import { createApp } from "./app.tsx";
+import { createApp, type PushDeps } from "./app.tsx";
 import { hashPassword } from "./auth/password.ts";
 import { LoginThrottle } from "./auth/throttle.ts";
 import { type DoorAnimation, readSettings } from "./settings.ts";
@@ -22,6 +22,7 @@ beforeAll(async () => {
 function makeApp(
   sizes: Record<string, "small" | "tall" | "wide" | "big"> = {},
   animations: Record<string, DoorAnimation> = {},
+  push?: PushDeps,
 ) {
   return createApp({
     settings: { ...readSettings(CONTENT), sizes, animations },
@@ -33,6 +34,9 @@ function makeApp(
     clientScript: "",
     style: "",
     fonts: new Map([["nunito.woff2", new Uint8Array([119, 79, 70, 50])]]),
+    serviceWorker: "// sw",
+    icons: new Map([["icon-192.png", new Uint8Array([137, 80, 78, 71])]]),
+    push,
     now: () => NOW,
   });
 }
@@ -140,7 +144,7 @@ describe("login", () => {
 });
 
 describe("header", () => {
-  it("shows the title, today's date, the bell and the logout", async () => {
+  it("shows the title, today's date and the logout", async () => {
     const app = makeApp();
     const cookie = await cookieFor(app, "guest password");
     const page = await (
@@ -152,7 +156,8 @@ describe("header", () => {
     );
     expect(page).toContain('<time class="header-date" datetime="2026-12-02">');
     expect(page).toContain("Mer. 2 déc.");
-    expect(page).toContain('<button type="button" class="notify" hidden="">');
+    // Push is off here: no bell ("web push" below covers it).
+    expect(page).not.toContain('class="notify"');
     expect(page).not.toContain("author-badge");
     // The visitor's logout keeps its label on every screen.
     expect(page).toContain("<span>Se déconnecter</span>");
@@ -265,5 +270,148 @@ describe("other routes", () => {
     expect(response.headers.get("content-security-policy")).toContain(
       "default-src 'self'",
     );
+  });
+});
+
+describe("web push", () => {
+  const ENDPOINT = "https://push.example/send/abc";
+  const SUBSCRIPTION = {
+    endpoint: ENDPOINT,
+    expirationTime: null,
+    keys: { p256dh: "B".repeat(87), auth: "A".repeat(22) },
+  };
+
+  function makePush(testResult: "sent" | "unknown" | "failed" = "sent") {
+    const saved: unknown[] = [];
+    const tested: string[] = [];
+    const push = {
+      publicKey: "BPublicKey",
+      store: {
+        add: (subscription: unknown) => saved.push(subscription),
+      } as unknown as PushDeps["store"],
+      test: (endpoint: string) => {
+        tested.push(endpoint);
+        return Promise.resolve(testResult);
+      },
+    };
+    return { push, saved, tested };
+  }
+
+  function post(
+    app: ReturnType<typeof makeApp>,
+    path: string,
+    body: unknown,
+    cookie = "",
+  ) {
+    return app.request(`${ORIGIN}${path}`, {
+      method: "POST",
+      headers: { cookie, origin: ORIGIN, "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  }
+
+  it("serves the service worker, the manifest and the icons without a session", async () => {
+    const app = makeApp();
+    const worker = await app.request(`${ORIGIN}/sw.js`);
+    expect(worker.status).toBe(200);
+    expect(worker.headers.get("content-type")).toMatch(/^text\/javascript/);
+    const manifest = await app.request(`${ORIGIN}/manifest.webmanifest`);
+    expect(manifest.headers.get("content-type")).toBe(
+      "application/manifest+json",
+    );
+    expect(await manifest.json()).toMatchObject({
+      name: readSettings(CONTENT).title,
+      start_url: "/",
+      display: "browser",
+    });
+    const icon = await app.request(`${ORIGIN}/static/icons/icon-192.png`);
+    expect(icon.status).toBe(200);
+    expect(icon.headers.get("content-type")).toBe("image/png");
+    expect((await app.request(`${ORIGIN}/static/icons/other.png`)).status).toBe(
+      404,
+    );
+  });
+
+  it("shows the bell only when push is on", async () => {
+    const off = makeApp();
+    const page = await off.request(`${ORIGIN}/`, {
+      headers: { cookie: await cookieFor(off, "guest password") },
+    });
+    expect(await page.text()).not.toContain('class="notify"');
+
+    const on = makeApp({}, {}, makePush().push);
+    const html = await (
+      await on.request(`${ORIGIN}/`, {
+        headers: { cookie: await cookieFor(on, "guest password") },
+      })
+    ).text();
+    expect(html).toContain('data-vapid-key="BPublicKey"');
+    expect(html).not.toContain("notify-test");
+  });
+
+  it("gives the test button to the author only", async () => {
+    const app = makeApp({}, {}, makePush().push);
+    const html = await (
+      await app.request(`${ORIGIN}/`, {
+        headers: { cookie: await cookieFor(app, "author password") },
+      })
+    ).text();
+    expect(html).toContain("notify-test");
+  });
+
+  it("saves a subscription from a signed-in visitor", async () => {
+    const { push, saved } = makePush();
+    const app = makeApp({}, {}, push);
+    const cookie = await cookieFor(app, "guest password");
+    const response = await post(
+      app,
+      "/api/push/subscription",
+      SUBSCRIPTION,
+      cookie,
+    );
+    expect(response.status).toBe(204);
+    expect(saved).toEqual([{ endpoint: ENDPOINT, keys: SUBSCRIPTION.keys }]);
+  });
+
+  it("refuses a subscription when signed out, malformed, or with push off", async () => {
+    const { push, saved } = makePush();
+    const app = makeApp({}, {}, push);
+    expect(
+      (await post(app, "/api/push/subscription", SUBSCRIPTION)).status,
+    ).toBe(401);
+    const cookie = await cookieFor(app, "guest password");
+    const plain = { ...SUBSCRIPTION, endpoint: "http://push.example/send/abc" };
+    expect(
+      (await post(app, "/api/push/subscription", plain, cookie)).status,
+    ).toBe(400);
+    expect(
+      (await post(app, "/api/push/subscription", "nope", cookie)).status,
+    ).toBe(400);
+    expect(saved).toEqual([]);
+
+    const off = makeApp();
+    const offCookie = await cookieFor(off, "guest password");
+    expect(
+      (await post(off, "/api/push/subscription", SUBSCRIPTION, offCookie))
+        .status,
+    ).toBe(404);
+  });
+
+  it("sends a test to the author's device only", async () => {
+    const { push, tested } = makePush("sent");
+    const app = makeApp({}, {}, push);
+    const guest = await cookieFor(app, "guest password");
+    expect(
+      (await post(app, "/api/push/test", { endpoint: ENDPOINT }, guest)).status,
+    ).toBe(403);
+    const author = await cookieFor(app, "author password");
+    const response = await post(
+      app,
+      "/api/push/test",
+      { endpoint: ENDPOINT },
+      author,
+    );
+    expect(await response.json()).toEqual({ result: "sent" });
+    expect(tested).toEqual([ENDPOINT]);
   });
 });

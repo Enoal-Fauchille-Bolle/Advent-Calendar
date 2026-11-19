@@ -22,13 +22,16 @@ RUN --mount=type=cache,id=pnpm,target=/var/cache/pnpm \
 
 FROM node:24-trixie-slim
 ENV ADVENT_HOST=0.0.0.0 \
-    ADVENT_CONTENT_DIR=/content
+    ADVENT_CONTENT_DIR=/content \
+    ADVENT_STATE_DIR=/state
 WORKDIR /app
 # The application files stay owned by root, so the server cannot change them.
 COPY package.json ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY assets ./assets
+# The only folder the server writes: push subscriptions and the days already sent.
+RUN install -d -o node -g node /state
 USER node
 EXPOSE 3000
 CMD ["node", "dist/main.js"]

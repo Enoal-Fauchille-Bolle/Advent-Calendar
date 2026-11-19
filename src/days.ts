@@ -61,6 +61,8 @@ const blockSchema = z.discriminatedUnion("type", [
 
 const daySchema = z.strictObject({
   title: z.string().min(1).optional(),
+  /** The notification for this day, in place of the one of `calendar.json`. */
+  notification: z.string().min(1).optional(),
   blocks: z.array(blockSchema).min(1),
 });
 
@@ -181,6 +183,17 @@ export function loadDay(contentDir: string, day: number): ShownDay | null {
   });
 
   return { day, title: data.title ?? null, blocks };
+}
+
+/**
+ * The `notification` of a day's `day.json`, or `null` when it has none or has no
+ * folder yet. A malformed day throws `DayError`.
+ */
+export function dayNotification(
+  contentDir: string,
+  day: number,
+): string | null {
+  return readDayFile(contentDir, day)?.data.notification ?? null;
 }
 
 /** Width over height above which a photo is landscape; its inverse marks portrait. */

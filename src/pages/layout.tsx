@@ -16,6 +16,7 @@ export function Layout({
           <meta name="robots" content="noindex, nofollow" />
           <title>{title}</title>
           <link rel="stylesheet" href="/static/style.css" />
+          <link rel="manifest" href="/manifest.webmanifest" />
         </head>
         <body>{children}</body>
       </html>

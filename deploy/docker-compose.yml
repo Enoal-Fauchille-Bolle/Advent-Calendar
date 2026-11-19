@@ -15,6 +15,8 @@ services:
     volumes:
       # The surprises, read-only: the server never writes them.
       - "${ADVENT_CONTENT:-../examples/content}:/content:ro"
+      # Push subscriptions and the days already sent, when ADVENT_VAPID_PRIVATE_KEY is set.
+      - state:/state
     # The image has no curl or wget, so Node itself asks /healthz.
     healthcheck:
       test:
@@ -26,3 +28,6 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
+
+volumes:
+  state:

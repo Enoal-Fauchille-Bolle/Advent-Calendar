@@ -12,9 +12,12 @@ import {
   type Role,
 } from "./auth/session.ts";
 import type { LoginThrottle } from "./auth/throttle.ts";
+import { ICON_SIZES } from "./client-script.ts";
 import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
 import { CalendarPage } from "./pages/calendar.tsx";
 import { LoginPage } from "./pages/login.tsx";
+import type { TestResult } from "./push/schedule.ts";
+import { type PushStore, subscriptionSchema } from "./push/store.ts";
 import type { DoorSize, Settings } from "./settings.ts";
 import { strings } from "./strings.ts";
 import { calendarDays, isInRange, isUnlocked } from "./unlock.ts";
@@ -30,8 +33,22 @@ export interface AppDeps {
   style: string;
   /** The font files of `assets/fonts/`, by file name. */
   fonts: ReadonlyMap<string, Uint8Array<ArrayBuffer>>;
+  /** The service worker, from `src/sw/sw.ts`. */
+  serviceWorker: string;
+  /** The icons of `assets/icons/`, by file name. */
+  icons: ReadonlyMap<string, Uint8Array<ArrayBuffer>>;
+  /** Web push; absent when no VAPID key is set. */
+  push?: PushDeps | undefined;
   /** The current time; tests replace it. */
   now?: () => Date;
+}
+
+export interface PushDeps {
+  /** The VAPID public key, which the browser needs to subscribe. */
+  publicKey: string;
+  store: PushStore;
+  /** Sends the test notification to one saved subscription. */
+  test: (endpoint: string) => Promise<TestResult>;
 }
 
 type Env = { Variables: { role: Role } };
@@ -105,6 +122,39 @@ export function createApp(deps: AppDeps): Hono<Env> {
     const font = deps.fonts.get(c.req.param("file"));
     if (font === undefined) return c.notFound();
     return c.body(font, 200, { "Content-Type": "font/woff2" });
+  });
+  // Public: the browser fetches the service worker, the manifest and the icons
+  // without the login cookie, and none of them holds anything of the calendar
+  // beyond its title, which the login page shows anyway.
+  app.get("/sw.js", (c) =>
+    c.body(deps.serviceWorker, 200, {
+      "Content-Type": "text/javascript; charset=UTF-8",
+      "Cache-Control": "no-cache",
+    }),
+  );
+  app.get("/manifest.webmanifest", (c) =>
+    c.body(
+      JSON.stringify({
+        name: settings.title,
+        short_name: settings.title,
+        start_url: "/",
+        display: "browser",
+        background_color: "#fbf6ee",
+        theme_color: "#7a1f3d",
+        icons: ICON_SIZES.map((size) => ({
+          src: `/static/icons/icon-${String(size)}.png`,
+          sizes: `${String(size)}x${String(size)}`,
+          type: "image/png",
+        })),
+      }),
+      200,
+      { "Content-Type": "application/manifest+json" },
+    ),
+  );
+  app.get("/static/icons/:file", (c) => {
+    const icon = deps.icons.get(c.req.param("file"));
+    if (icon === undefined) return c.notFound();
+    return c.body(icon, 200, { "Content-Type": "image/png" });
   });
 
   const readRole = async (c: Context<Env>): Promise<Role | null> => {
@@ -199,6 +249,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
         role={c.var.role}
         now={now()}
         sizes={sizes}
+        vapidKey={deps.push?.publicKey}
       />,
     );
   });
@@ -228,6 +279,43 @@ export function createApp(deps: AppDeps): Hono<Env> {
       console.error(`${now().toISOString()} ${error.message}`);
       return c.json({ error: "broken door" }, 500);
     }
+  });
+
+  /** The JSON body of a push request, or `null` when it is not JSON. */
+  const readJson = async (c: Context<Env>): Promise<unknown> => {
+    try {
+      return (await c.req.json()) as unknown;
+    } catch {
+      return null;
+    }
+  };
+
+  // Saves this browser's push subscription; it sends it again on each visit.
+  app.post(
+    "/api/push/subscription",
+    bodyLimit({ maxSize: 4 * 1024 }),
+    async (c) => {
+      if (deps.push === undefined) return c.json({ error: "no push" }, 404);
+      const parsed = subscriptionSchema.safeParse(await readJson(c));
+      if (!parsed.success) return c.json({ error: "bad subscription" }, 400);
+      const { endpoint, keys } = parsed.data;
+      deps.push.store.add({
+        endpoint,
+        keys: { p256dh: keys.p256dh, auth: keys.auth },
+      });
+      return c.body(null, 204);
+    },
+  );
+
+  // Author mode: a test notification to the device that asks, and to it only.
+  app.post("/api/push/test", bodyLimit({ maxSize: 4 * 1024 }), async (c) => {
+    if (deps.push === undefined) return c.json({ error: "no push" }, 404);
+    if (c.var.role !== "author") return c.json({ error: "author only" }, 403);
+    const parsed = subscriptionSchema
+      .pick({ endpoint: true })
+      .safeParse(await readJson(c));
+    if (!parsed.success) return c.json({ error: "bad endpoint" }, 400);
+    return c.json({ result: await deps.push.test(parsed.data.endpoint) });
   });
 
   app.get("/media/:day/:file", async (c) => {

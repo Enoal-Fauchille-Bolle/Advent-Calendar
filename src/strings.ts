@@ -15,6 +15,7 @@ export const strings = {
     authorMode:
       "Mode auteur : toutes les portes s'ouvrent, même avant leur date.",
     notifications: "Notifications",
+    notificationTest: "Notification de test",
     logout: "Se déconnecter",
     close: "Fermer",
   },
@@ -27,6 +28,16 @@ export const strings = {
     voucher: "Bon pour",
     notificationsBlocked:
       "Les notifications sont bloquées pour ce site. Pour les activer, ouvre les réglages du site dans ton navigateur (souvent l'icône à gauche de l'adresse), autorise les notifications, puis recharge la page.",
+    testSent: "Notification envoyée : elle arrive dans quelques secondes.",
+    testUnknown:
+      "Cet appareil n'est pas enregistré pour les notifications. Recharge la page puis réessaie.",
+    testFailed: "L'envoi a échoué. Réessaie dans un instant.",
+  },
+  /** Texts of the notifications. */
+  push: {
+    /** The door's notification when `calendar.json` gives none; `{day}` is its number. */
+    door: "La porte {day} est ouverte 🎁",
+    test: "Les notifications marchent 🎉",
   },
   /** "Mer. 2 déc.": today's date in the calendar's time zone, for the header. */
   shortDate: (now: Date, timeZone: string) => {

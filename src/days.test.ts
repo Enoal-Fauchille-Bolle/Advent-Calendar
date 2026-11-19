@@ -2,7 +2,13 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
+import {
+  DayError,
+  dayNotification,
+  doorSize,
+  findMedia,
+  loadDay,
+} from "./days.ts";
 
 const EXAMPLES = "examples/content";
 
@@ -126,5 +132,29 @@ describe("doorSize", () => {
   ])("sizes %s", async (_, day, size) => {
     const root = contentWith(day, { "voice.mp3": "x", "fake.png": "text" });
     expect(await doorSize(root, 4)).toBe(size);
+  });
+});
+
+describe("dayNotification", () => {
+  it("reads a day's own notification", () => {
+    const content = contentWith({
+      notification: "Prends ton écharpe",
+      blocks: [{ type: "text", text: "x" }],
+    });
+    expect(dayNotification(content, 4)).toBe("Prends ton écharpe");
+  });
+
+  it("returns null for a day without one or with no folder", () => {
+    const content = contentWith({ blocks: [{ type: "text", text: "x" }] });
+    expect(dayNotification(content, 4)).toBeNull();
+    expect(dayNotification(content, 5)).toBeNull();
+  });
+
+  it("refuses an empty notification", () => {
+    const content = contentWith({
+      notification: "",
+      blocks: [{ type: "text", text: "x" }],
+    });
+    expect(() => dayNotification(content, 4)).toThrow(DayError);
   });
 });

@@ -23,6 +23,9 @@ interface ClientStrings {
   error: string;
   voucher: string;
   notificationsBlocked: string;
+  testSent: string;
+  testUnknown: string;
+  testFailed: string;
 }
 
 const strings = JSON.parse(
@@ -329,16 +332,73 @@ document.addEventListener("click", (event) => {
   if (door !== null) void openDoor(door);
 });
 
-// The bell asks the browser's permission for notifications; nothing is sent yet.
-// It shows while the answer is pending ("default") or refused ("denied"): after a
-// refusal the browser asks no more, so a tap explains how to allow them again.
-// `data-permission` lets the stylesheet animate the bell only while it waits.
-const bell = document.querySelector<HTMLButtonElement>("button.notify");
+// The bell asks the browser's permission for notifications. It shows while the answer
+// is pending ("default") or refused ("denied"): after a refusal the browser asks no
+// more, so a tap explains how to allow them again. `data-permission` lets the
+// stylesheet animate the bell only while it waits. The page leaves the bell out when
+// the server has no push key.
+const bell = document.querySelector<HTMLButtonElement>(
+  "button.notify:not(.notify-test)",
+);
+// Author mode: sends a test notification to this device, in the bell's place.
+const testButton =
+  document.querySelector<HTMLButtonElement>("button.notify-test");
+const vapidKey = bell?.dataset.vapidKey ?? "";
+const pushWorks =
+  "Notification" in window &&
+  "serviceWorker" in navigator &&
+  "PushManager" in window;
+
+/** This browser's push subscription, made with the server's current key. */
+async function subscription(): Promise<PushSubscription> {
+  const registration = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
+  const key = Uint8Array.from(
+    atob(vapidKey.replaceAll("-", "+").replaceAll("_", "/")),
+    (c) => c.charCodeAt(0),
+  );
+  const current = await registration.pushManager.getSubscription();
+  const currentKey = current?.options.applicationServerKey;
+  // A new server key makes the old subscription useless: it is replaced.
+  if (
+    current !== null &&
+    currentKey !== null &&
+    currentKey !== undefined &&
+    new Uint8Array(currentKey).toString() === key.toString()
+  ) {
+    return current;
+  }
+  await current?.unsubscribe();
+  return registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: key,
+  });
+}
+
+/**
+ * Sends this browser's subscription to the server, on each visit: the browser may
+ * have renewed it, or the server lost it.
+ */
+async function register(): Promise<void> {
+  const current = await subscription();
+  await fetch("/api/push/subscription", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(current),
+  });
+}
 
 function updateBell(): void {
-  if (bell === null || !("Notification" in window)) return;
+  if (bell === null || !pushWorks || vapidKey === "") return;
+  const granted = Notification.permission === "granted";
   bell.dataset.permission = Notification.permission;
-  bell.hidden = Notification.permission === "granted";
+  bell.hidden = granted;
+  if (testButton !== null) testButton.hidden = !granted;
+  if (granted) {
+    register().catch((error: unknown) => {
+      console.error("push subscription failed", error);
+    });
+  }
 }
 
 updateBell();
@@ -348,4 +408,27 @@ bell?.addEventListener("click", () => {
     return;
   }
   void Notification.requestPermission().then(updateBell);
+});
+
+testButton?.addEventListener("click", () => {
+  void (async () => {
+    try {
+      const { endpoint } = await subscription();
+      const response = await fetch("/api/push/test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ endpoint }),
+      });
+      const { result } = (await response.json()) as { result?: string };
+      showMessage(
+        result === "sent"
+          ? strings.testSent
+          : result === "unknown"
+            ? strings.testUnknown
+            : strings.testFailed,
+      );
+    } catch {
+      showMessage(strings.testFailed);
+    }
+  })();
 });
