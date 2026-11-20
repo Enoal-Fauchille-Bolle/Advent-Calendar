@@ -284,7 +284,9 @@ button {
   display: inline-flex;
   margin: 0;
   padding: 0.4rem 0;
-  animation: scroll 30s linear infinite;
+  /* 30 s per copy: the page script adds copies to fill wide screens and lengthens
+     the loop to match, so the text keeps the same speed. */
+  animation: scroll var(--banner-duration, 30s) linear infinite;
 }
 
 .banner-track span {

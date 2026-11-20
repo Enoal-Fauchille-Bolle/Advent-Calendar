@@ -432,3 +432,38 @@ testButton?.addEventListener("click", () => {
     }
   })();
 });
+
+// The banner scrolls a line of copies of its text by half its width, then starts
+// over: the loop looks seamless only while that half covers the whole strip. The page
+// holds two copies, enough for a phone; on a wider screen, this adds copies until each
+// half covers the strip, and lengthens the loop so each copy keeps the same speed.
+const banner = document.querySelector<HTMLElement>(".banner");
+const track = banner?.querySelector<HTMLElement>(".banner-track");
+const copy = track?.querySelector<HTMLElement>("span");
+/** Seconds one copy takes to scroll by its own width, as in the stylesheet. */
+const SECONDS_PER_COPY = 30;
+
+function fillBanner(): void {
+  if (banner === null || track === null || track === undefined) return;
+  if (copy === null || copy === undefined) return;
+  const copyWidth = copy.getBoundingClientRect().width;
+  if (copyWidth === 0) return;
+  const perHalf = Math.max(1, Math.ceil(banner.clientWidth / copyWidth));
+  if (track.children.length === 2 * perHalf) return;
+  const clones = Array.from(
+    { length: 2 * perHalf - 1 },
+    () => copy.cloneNode(true) as HTMLElement,
+  );
+  track.replaceChildren(copy, ...clones);
+  track.style.setProperty(
+    "--banner-duration",
+    `${String(perHalf * SECONDS_PER_COPY)}s`,
+  );
+}
+
+// Again when the window changes width, or when the web font loads and widens the text.
+if (banner !== null && copy !== null && copy !== undefined) {
+  const observer = new ResizeObserver(fillBanner);
+  observer.observe(banner);
+  observer.observe(copy);
+}
