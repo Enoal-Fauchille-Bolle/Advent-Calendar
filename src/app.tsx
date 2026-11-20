@@ -154,7 +154,11 @@ export function createApp(deps: AppDeps): Hono<Env> {
   app.get("/static/icons/:file", (c) => {
     const icon = deps.icons.get(c.req.param("file"));
     if (icon === undefined) return c.notFound();
-    return c.body(icon, 200, { "Content-Type": "image/png" });
+    return c.body(icon, 200, {
+      "Content-Type": c.req.param("file").endsWith(".svg")
+        ? "image/svg+xml"
+        : "image/png",
+    });
   });
 
   const readRole = async (c: Context<Env>): Promise<Role | null> => {

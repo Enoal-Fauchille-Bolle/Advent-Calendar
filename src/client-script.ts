@@ -51,15 +51,17 @@ export function loadFonts(): ReadonlyMap<string, Uint8Array<ArrayBuffer>> {
 /** Icon sizes in pixels, for the manifest and the notifications. */
 export const ICON_SIZES = [192, 512] as const;
 
-/** Each icon of `assets/icons/`, `icon-192.png` and `icon-512.png`. */
+/**
+ * Each icon of `assets/icons/`: `icon-192.png` and `icon-512.png`, and `icon.svg` for
+ * the browser tab.
+ */
 export function loadIcons(): ReadonlyMap<string, Uint8Array<ArrayBuffer>> {
   return new Map(
-    ICON_SIZES.map((size) => {
-      const name = `icon-${String(size)}.png`;
-      return [
+    [...ICON_SIZES.map((size) => `icon-${String(size)}.png`), "icon.svg"].map(
+      (name) => [
         name,
         readFileSync(new URL(`../assets/icons/${name}`, import.meta.url)),
-      ];
-    }),
+      ],
+    ),
   );
 }

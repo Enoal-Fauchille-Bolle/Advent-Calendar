@@ -35,7 +35,10 @@ function makeApp(
     style: "",
     fonts: new Map([["nunito.woff2", new Uint8Array([119, 79, 70, 50])]]),
     serviceWorker: "// sw",
-    icons: new Map([["icon-192.png", new Uint8Array([137, 80, 78, 71])]]),
+    icons: new Map([
+      ["icon-192.png", new Uint8Array([137, 80, 78, 71])],
+      ["icon.svg", new Uint8Array([60, 115, 118, 103])],
+    ]),
     push,
     now: () => NOW,
   });
@@ -327,8 +330,21 @@ describe("web push", () => {
     const icon = await app.request(`${ORIGIN}/static/icons/icon-192.png`);
     expect(icon.status).toBe(200);
     expect(icon.headers.get("content-type")).toBe("image/png");
+    const svg = await app.request(`${ORIGIN}/static/icons/icon.svg`);
+    expect(svg.status).toBe(200);
+    expect(svg.headers.get("content-type")).toBe("image/svg+xml");
     expect((await app.request(`${ORIGIN}/static/icons/other.png`)).status).toBe(
       404,
+    );
+  });
+
+  it("points the browser tab to the SVG icon, with the PNG as a fallback", async () => {
+    const page = await (await makeApp().request(`${ORIGIN}/login`)).text();
+    expect(page).toContain(
+      '<link rel="icon" href="/static/icons/icon-192.png" type="image/png"/>',
+    );
+    expect(page).toContain(
+      '<link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml"/>',
     );
   });
 

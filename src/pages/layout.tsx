@@ -16,6 +16,9 @@ export function Layout({
           <meta name="robots" content="noindex, nofollow" />
           <title>{title}</title>
           <link rel="stylesheet" href="/static/style.css" />
+          {/* The SVG stays sharp in the tab; a browser that cannot show it takes the PNG. */}
+          <link rel="icon" href="/static/icons/icon-192.png" type="image/png" />
+          <link rel="icon" href="/static/icons/icon.svg" type="image/svg+xml" />
           <link rel="manifest" href="/manifest.webmanifest" />
         </head>
         <body>{children}</body>
