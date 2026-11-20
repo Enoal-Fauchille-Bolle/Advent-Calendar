@@ -21,6 +21,7 @@ describe("parseSettings", () => {
     expect(parseSettings(valid)).toEqual({
       ...valid,
       banner: "",
+      bannerSpeed: 10,
       sizes: {},
       animations: {},
     });
@@ -54,6 +55,8 @@ describe("parseSettings", () => {
     ["a first day after the last", { firstDay: 10, lastDay: 5 }],
     ["a last day past the month", { month: 11, lastDay: 31 }],
     ["an unknown key", { colour: "red" }],
+    ["a banner speed of zero", { bannerSpeed: 0 }],
+    ["a negative banner speed", { bannerSpeed: -5 }],
     ["a fractional day", { firstDay: 1.5 }],
     ["an unknown door size", { sizes: { "1": "huge" } }],
     ["a size for a door out of range", { sizes: { "26": "big" } }],

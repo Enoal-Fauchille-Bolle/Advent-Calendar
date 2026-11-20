@@ -2,7 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { createApp, type PushDeps } from "./app.tsx";
 import { hashPassword } from "./auth/password.ts";
 import { LoginThrottle } from "./auth/throttle.ts";
-import { type DoorAnimation, readSettings } from "./settings.ts";
+import { type DoorAnimation, readSettings, type Settings } from "./settings.ts";
 
 const ORIGIN = "http://localhost";
 const CONTENT = "examples/content";
@@ -23,9 +23,10 @@ function makeApp(
   sizes: Record<string, "small" | "tall" | "wide" | "big"> = {},
   animations: Record<string, DoorAnimation> = {},
   push?: PushDeps,
+  more: Partial<Settings> = {},
 ) {
   return createApp({
-    settings: { ...readSettings(CONTENT), sizes, animations },
+    settings: { ...readSettings(CONTENT), sizes, animations, ...more },
     contentDir: CONTENT,
     passwordHash,
     authorPasswordHash,
@@ -147,6 +148,27 @@ describe("login", () => {
 });
 
 describe("header", () => {
+  it("gives the banner its speed and hides it when empty", async () => {
+    const app = makeApp({}, {}, undefined, {
+      banner: "Joyeux Noël",
+      bannerSpeed: 25,
+    });
+    const cookie = await cookieFor(app, "guest password");
+    const page = await (
+      await app.request(`${ORIGIN}/`, { headers: { cookie } })
+    ).text();
+    expect(page).toContain(
+      '<div class="banner" aria-label="Joyeux Noël" data-speed="25">',
+    );
+    const empty = makeApp();
+    const plain = await (
+      await empty.request(`${ORIGIN}/`, {
+        headers: { cookie: await cookieFor(empty, "guest password") },
+      })
+    ).text();
+    expect(plain).not.toContain('class="banner"');
+  });
+
   it("shows the title, today's date and the logout", async () => {
     const app = makeApp();
     const cookie = await cookieFor(app, "guest password");

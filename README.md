@@ -28,6 +28,7 @@ content/
 | -------------- | ---------------------------------------------------------------------------------------------------- | ----------------- |
 | `title`        | Page title                                                                                           | `"Calendrier"`    |
 | `banner`       | Scrolling text at the top; `""` or absent hides it                                                   | `"Joyeux Noël ★"` |
+| `bannerSpeed`  | Speed of the banner text, in pixels per second, above 0; absent: 10                                  | `40`              |
 | `notification` | Notification sent when a door opens, `{day}` for its number; absent: "La porte {day} est ouverte 🎁" | `"Porte {day} !"` |
 | `year`         | Year of the calendar                                                                                 | `2026`            |
 | `month`        | Month, 1 to 12                                                                                       | `12`              |

@@ -53,7 +53,11 @@ export function CalendarPage({
   return (
     <Layout title={settings.title}>
       {settings.banner === "" ? null : (
-        <div class="banner" aria-label={settings.banner}>
+        <div
+          class="banner"
+          aria-label={settings.banner}
+          data-speed={String(settings.bannerSpeed)}
+        >
           <p class="banner-track" aria-hidden="true">
             <span>{settings.banner}</span>
             <span>{settings.banner}</span>

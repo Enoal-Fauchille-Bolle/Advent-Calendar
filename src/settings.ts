@@ -70,6 +70,8 @@ const settingsSchema = z
     title: z.string().min(1),
     /** Scrolling text at the top of the page; empty hides the banner. */
     banner: z.string().default(""),
+    /** Speed of the banner text, in pixels per second. */
+    bannerSpeed: z.number().positive().default(10),
     /**
      * The notification sent when a door opens, `{day}` standing for its number; a
      * day's own `notification` replaces it for that day. Absent: a sentence of

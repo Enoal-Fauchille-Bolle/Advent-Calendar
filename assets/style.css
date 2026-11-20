@@ -284,8 +284,8 @@ button {
   display: inline-flex;
   margin: 0;
   padding: 0.4rem 0;
-  /* 30 s per copy: the page script adds copies to fill wide screens and lengthens
-     the loop to match, so the text keeps the same speed. */
+  /* The page script adds copies to fill wide screens and sets the loop's length from
+     `bannerSpeed`; without the script, 30 s for one copy. */
   animation: scroll var(--banner-duration, 30s) linear infinite;
 }
 
