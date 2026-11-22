@@ -51,7 +51,7 @@ jobs:
           images: ${{ env.IMAGE }}
           tags: type=semver,pattern={{version}}
 
-      # arm64 is left out until the repository is public.
+      # linux/amd64 only for now.
       - uses: docker/build-push-action@v7
         with:
           context: .
