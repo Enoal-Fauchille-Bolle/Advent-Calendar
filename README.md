@@ -24,21 +24,21 @@ content/
 
 ### `calendar.json`
 
-| Key            | Meaning                                                                                                              | Example           |
-| -------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------- |
-| `title`        | Page title                                                                                                           | `"Calendrier"`    |
-| `language`     | Language of the interface: `en` or `fr`; absent: `en`                                                                | `"fr"`            |
-| `banner`       | Scrolling text at the top; `""` or absent hides it                                                                   | `"Joyeux Noël ★"` |
-| `bannerSpeed`  | Speed of the banner text, in pixels per second, above 0; absent: 10                                                  | `40`              |
-| `notification` | Notification sent when a door opens, `{day}` for its number; absent: "Door {day} is open 🎁", in the chosen language | `"Door {day}!"`   |
-| `year`         | Year of the calendar                                                                                                 | `2026`            |
-| `month`        | Month, 1 to 12                                                                                                       | `12`              |
-| `firstDay`     | First door                                                                                                           | `1`               |
-| `lastDay`      | Last door                                                                                                            | `25`              |
-| `timezone`     | IANA time zone the unlock time is read in                                                                            | `"Europe/Paris"`  |
-| `unlockTime`   | Local time at which door N opens on day N, `HH:MM`, 24 hours                                                         | `"09:00"`         |
-| `sizes`        | Door sizes chosen by hand, by door number (see below)                                                                | `{ "5": "big" }`  |
-| `animations`   | Opening animations chosen by hand, by door number (see below)                                                        | `{ "7": "tear" }` |
+| Key            | Meaning                                                                                                              | Example               |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `title`        | Page title                                                                                                           | `"Advent Calendar"`   |
+| `language`     | Language of the interface: `en` or `fr`; absent: `en`                                                                | `"fr"`                |
+| `banner`       | Scrolling text at the top; `""` or absent hides it                                                                   | `"Merry Christmas ★"` |
+| `bannerSpeed`  | Speed of the banner text, in pixels per second, above 0; absent: 10                                                  | `40`                  |
+| `notification` | Notification sent when a door opens, `{day}` for its number; absent: "Door {day} is open 🎁", in the chosen language | `"Door {day}!"`       |
+| `year`         | Year of the calendar                                                                                                 | `2026`                |
+| `month`        | Month, 1 to 12                                                                                                       | `12`                  |
+| `firstDay`     | First door                                                                                                           | `1`                   |
+| `lastDay`      | Last door                                                                                                            | `25`                  |
+| `timezone`     | IANA time zone the unlock time is read in                                                                            | `"Europe/Paris"`      |
+| `unlockTime`   | Local time at which door N opens on day N, `HH:MM`, 24 hours                                                         | `"09:00"`             |
+| `sizes`        | Door sizes chosen by hand, by door number (see below)                                                                | `{ "5": "big" }`      |
+| `animations`   | Opening animations chosen by hand, by door number (see below)                                                        | `{ "7": "tear" }`     |
 
 The server reads `calendar.json` once at start: restart it after a change. Day folders are read on each request, so a day can be added or fixed while the server runs.
 
@@ -52,7 +52,11 @@ The server reads `calendar.json` once at start: restart it after a change. Day f
     { "type": "letter", "file": "letter.txt" },
     { "type": "text", "text": "A short paragraph." },
     { "type": "list", "title": "Optional", "items": ["One", "Two"] },
-    { "type": "voucher", "title": "Un resto au choix", "details": "Optional" },
+    {
+      "type": "voucher",
+      "title": "A restaurant of your choice",
+      "details": "Optional"
+    },
     {
       "type": "image",
       "file": "photo.jpg",
@@ -171,7 +175,7 @@ ADVENT_AUTHOR_PASSWORD_HASH=scrypt:...
 ADVENT_SESSION_SECRET=...
 # Optional, for notifications
 ADVENT_VAPID_PRIVATE_KEY=...
-ADVENT_VAPID_SUBJECT=https://avent.example.com
+ADVENT_VAPID_SUBJECT=https://advent.example.com
 # Content folder on the host, relative to deploy/; the examples by default
 ADVENT_CONTENT=../content
 ```

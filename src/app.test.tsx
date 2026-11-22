@@ -154,7 +154,7 @@ describe("login", () => {
 describe("header", () => {
   it("gives the banner its speed and hides it when empty", async () => {
     const app = makeApp({}, {}, undefined, {
-      banner: "Joyeux Noël",
+      banner: "Merry Christmas",
       bannerSpeed: 25,
     });
     const cookie = await cookieFor(app, "guest password");
@@ -162,7 +162,7 @@ describe("header", () => {
       await app.request(`${ORIGIN}/`, { headers: { cookie } })
     ).text();
     expect(page).toContain(
-      '<div class="banner" aria-label="Joyeux Noël" data-speed="25">',
+      '<div class="banner" aria-label="Merry Christmas" data-speed="25">',
     );
     const empty = makeApp({}, {}, undefined, { banner: "" });
     const plain = await (

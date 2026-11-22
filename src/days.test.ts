@@ -142,10 +142,10 @@ describe("doorSize", () => {
 describe("dayNotification", () => {
   it("reads a day's own notification", () => {
     const content = contentWith({
-      notification: "Prends ton écharpe",
+      notification: "Bring your scarf",
       blocks: [{ type: "text", text: "x" }],
     });
-    expect(dayNotification(content, 4)).toBe("Prends ton écharpe");
+    expect(dayNotification(content, 4)).toBe("Bring your scarf");
   });
 
   it("returns null for a day without one or with no folder", () => {

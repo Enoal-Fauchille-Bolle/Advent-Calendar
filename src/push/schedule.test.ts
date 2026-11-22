@@ -140,10 +140,10 @@ describe("sendDueDoor", () => {
 
   it("uses the calendar's sentence, and a day's own one for that day", async () => {
     const { deps, sent, setNow } = setup({
-      notification: "Porte {day} : viens voir",
+      notification: "Door {day}: come and see",
       days: {
         6: {
-          notification: "Le jour {day} est spécial",
+          notification: "Day {day} is special",
           blocks: [{ type: "text", text: "x" }],
         },
       },
@@ -153,10 +153,10 @@ describe("sendDueDoor", () => {
     setNow(at("2026-12-06T08:00:00Z"));
     await sendDueDoor(deps);
     expect(sent.map((s) => s.message.body)).toEqual([
-      "Porte 5 : viens voir",
-      "Porte 5 : viens voir",
-      "Le jour 6 est spécial",
-      "Le jour 6 est spécial",
+      "Door 5: come and see",
+      "Door 5: come and see",
+      "Day 6 is special",
+      "Day 6 is special",
     ]);
   });
 

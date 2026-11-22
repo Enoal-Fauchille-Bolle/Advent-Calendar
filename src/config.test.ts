@@ -20,13 +20,13 @@ describe("readConfig", () => {
     const config = readConfig({
       ...base,
       ADVENT_VAPID_PRIVATE_KEY: pair.privateKey,
-      ADVENT_VAPID_SUBJECT: "https://avent.example",
+      ADVENT_VAPID_SUBJECT: "https://advent.example",
       ADVENT_STATE_DIR: "/state",
     });
     expect(config.push).toEqual({
       privateKey: pair.privateKey,
       publicKey: pair.publicKey,
-      subject: "https://avent.example",
+      subject: "https://advent.example",
     });
     expect(config.stateDir).toBe("/state");
   });
@@ -46,8 +46,8 @@ describe("readConfig", () => {
     for (const subject of [
       undefined,
       "",
-      "http://avent.example",
-      "avent.example",
+      "http://advent.example",
+      "advent.example",
     ]) {
       expect(() =>
         readConfig({
@@ -61,7 +61,7 @@ describe("readConfig", () => {
       readConfig({
         ...base,
         ADVENT_VAPID_PRIVATE_KEY: "not a key",
-        ADVENT_VAPID_SUBJECT: "https://avent.example",
+        ADVENT_VAPID_SUBJECT: "https://advent.example",
       }),
     ).toThrow(ConfigError);
   });

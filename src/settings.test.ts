@@ -37,8 +37,8 @@ describe("parseSettings", () => {
 
   it("accepts a notification sentence and refuses an empty one", () => {
     expect(
-      parseSettings({ ...valid, notification: "Porte {day}" }).notification,
-    ).toBe("Porte {day}");
+      parseSettings({ ...valid, notification: "Door {day}" }).notification,
+    ).toBe("Door {day}");
     expect(() => parseSettings({ ...valid, notification: "" })).toThrow(
       SettingsError,
     );
