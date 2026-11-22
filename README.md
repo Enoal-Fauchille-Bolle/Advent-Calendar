@@ -8,7 +8,7 @@ The interface is in English or French, chosen with `language` in `calendar.json`
 
 ## Content
 
-Everything personal lives in a content folder outside the repository (`content/` is ignored by Git). `examples/content/` shows the layout:
+Everything personal lives in a content folder outside the repository (`content/` is ignored by Git). `examples/content/` is a full calendar: days 1 to 14 show what it can hold, days 15 to 25 explain each feature. Its layout:
 
 ```
 content/

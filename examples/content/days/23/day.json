@@ -1,0 +1,20 @@
+{
+  "title": "Mixing blocks",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "snowman.jpg",
+      "alt": "A drawn snowman under falling snow at night",
+      "caption": "A snowman, drawn for the example"
+    },
+    {
+      "type": "text",
+      "text": "A day can hold any number of blocks, in any order. The first one sets the size of the door: here a portrait picture, so the door is tall."
+    },
+    {
+      "type": "audio",
+      "file": "we-wish-you.mp3",
+      "caption": "We Wish You a Merry Christmas"
+    }
+  ]
+}

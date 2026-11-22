@@ -1,3 +1,9 @@
-Ceci est un exemple de lettre.
+Welcome to your advent calendar.
 
-Chaque ligne vide commence un nouveau paragraphe, et les retours à la ligne sont gardés.
+From today until Christmas, a new door opens every morning. Behind each one is something small: a few words, a photo, a song, a promise to keep.
+
+Nothing here is big. It is all meant to make the wait a little sweeter.
+
+One door a day, no peeking ahead. (The doors are locked anyway.)
+
+See you tomorrow morning.

@@ -1,9 +1,10 @@
 {
+  "title": "A riddle",
+  "notification": "A riddle is waiting for you 🤔",
   "blocks": [
     {
-      "type": "image",
-      "file": "portrait.jpg",
-      "alt": "Une mire de test en portrait"
+      "type": "text",
+      "text": "What has hands but cannot clap?\n\nThe answer is behind tomorrow's door."
     }
   ]
 }

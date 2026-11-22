@@ -1,0 +1,9 @@
+{
+  "title": "Sizes and animations by hand",
+  "blocks": [
+    {
+      "type": "text",
+      "text": "This door holds a text, which would make it small. calendar.json says otherwise: \"sizes\": { \"24\": \"wide\" } makes it wide, and \"animations\": { \"24\": \"none\" } opens it with no animation.\n\nThe other doors take their animation from their number: swing, double, tear, lid or fade. Two days in a row never share one."
+    }
+  ]
+}

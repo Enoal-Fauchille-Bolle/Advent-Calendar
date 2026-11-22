@@ -30,25 +30,25 @@ function contentWith(
 describe("loadDay", () => {
   it("reads a letter from its text file", () => {
     const day = loadDay(EXAMPLES, 1);
-    expect(day?.title).toBe("Une petite lettre");
+    expect(day?.title).toBe("Welcome");
     expect(day?.blocks[0]).toMatchObject({ type: "letter" });
     expect(day?.blocks[0]).toHaveProperty(
       "text",
-      expect.stringContaining("exemple de lettre"),
+      expect.stringContaining("Welcome to your advent calendar."),
     );
   });
 
   it("turns media into URLs", () => {
-    expect(loadDay(EXAMPLES, 3)?.blocks[1]).toEqual({
+    expect(loadDay(EXAMPLES, 3)?.blocks[0]).toEqual({
       type: "image",
-      url: "/media/3/photo.png",
-      alt: "Un carré rouge",
-      caption: "La légende de la photo",
+      url: "/media/3/snow-forest.jpg",
+      alt: "A forest of fir trees under fresh snow",
+      caption: "The world goes quiet when it snows.",
     });
   });
 
   it("returns null for a day with no folder", () => {
-    expect(loadDay(EXAMPLES, 24)).toBeNull();
+    expect(loadDay(contentWith({ blocks: [] }), 24)).toBeNull();
   });
 
   it.each([
@@ -74,8 +74,8 @@ describe("loadDay", () => {
 
 describe("findMedia", () => {
   it("finds a media file of the day", () => {
-    expect(findMedia(EXAMPLES, 3, "photo.png")).toMatchObject({
-      type: "image/png",
+    expect(findMedia(EXAMPLES, 3, "snow-forest.jpg")).toMatchObject({
+      type: "image/jpeg",
     });
   });
 
@@ -104,11 +104,15 @@ const photoDay = (file: string) => ({ blocks: [{ type: "image", file }] });
 describe("doorSize", () => {
   it.each([
     ["a letter", 1, "tall"],
-    ["a voucher before a list", 2, "small"],
-    ["a text before a square photo", 3, "small"],
-    ["a day with no folder", 24, "small"],
+    ["a voucher", 2, "small"],
+    ["a text before a sound", 6, "small"],
+    ["a landscape photo before a text", 14, "wide"],
   ])("sizes %s", async (_, day, size) => {
     expect(await doorSize(EXAMPLES, day)).toBe(size);
+  });
+
+  it("sizes a day with no folder small", async () => {
+    expect(await doorSize(contentWith({ blocks: [] }), 24)).toBe("small");
   });
 
   it.each([

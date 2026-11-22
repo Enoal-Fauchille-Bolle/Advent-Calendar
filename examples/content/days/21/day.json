@@ -1,0 +1,11 @@
+{
+  "title": "Square photos",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "square.jpg",
+      "alt": "A drawn frame marked 1:1, 600 by 600 pixels",
+      "caption": "Anything in between counts as square and makes a big door."
+    }
+  ]
+}

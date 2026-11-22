@@ -1,0 +1,8 @@
+A letter is the place for longer words.
+
+Its text sits either in day.json, in the "text" field, or in a .txt file next to it, named in the "file" field. This one comes from letter.txt.
+
+A blank line starts a new paragraph, and single line breaks are kept,
+like this one.
+
+When a letter is longer than its door, it fades out at the bottom. Tapping the open door shows the whole letter.

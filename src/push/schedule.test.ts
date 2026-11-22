@@ -91,7 +91,7 @@ describe("sendDueDoor", () => {
       sub(2).endpoint,
     ]);
     expect(sent[0]?.message).toEqual({
-      title: "Calendrier de l'Avent",
+      title: "Let's count to Christmas",
       body: "Door 5 is open 🎁",
       tag: "door-5",
       url: "/",

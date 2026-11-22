@@ -1,0 +1,11 @@
+{
+  "title": "Landscape photos",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "landscape.jpg",
+      "alt": "A drawn frame marked 16:10, 800 by 500 pixels",
+      "caption": "A photo at least 1.25 times wider than tall makes a wide door."
+    }
+  ]
+}

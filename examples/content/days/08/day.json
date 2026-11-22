@@ -1,6 +1,16 @@
 {
-  "title": "Un message vocal",
   "blocks": [
-    { "type": "audio", "file": "vocal.m4a", "caption": "Un exemple en .m4a" }
+    {
+      "type": "list",
+      "title": "Winter to-do list",
+      "items": [
+        "Build a snowman, however small",
+        "Watch a Christmas film under a blanket",
+        "Bake cookies and eat half the dough",
+        "Go for a walk while it snows",
+        "Write a card to someone far away",
+        "Make hot chocolate (see door 4)"
+      ]
+    }
   ]
 }

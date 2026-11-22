@@ -1,0 +1,9 @@
+{
+  "title": "Welcome to the tour",
+  "blocks": [
+    {
+      "type": "text",
+      "text": "This calendar is a folder of files. calendar.json sets the title, the dates and the time the doors open. Each day has its own folder, days/01 to days/25, with a day.json that lists what its door holds.\n\nDoor N opens on day N at the unlock time, in the calendar's time zone. Until then the server refuses it, so the page source reveals nothing early.\n\nThe next doors show each kind of block, one at a time. A text block like this one makes a small door, and a text longer than its door fades out at the bottom."
+    }
+  ]
+}

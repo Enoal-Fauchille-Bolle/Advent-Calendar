@@ -1,10 +1,16 @@
 {
   "blocks": [
     {
-      "type": "image",
-      "file": "paysage.jpg",
-      "alt": "Une mire de test en paysage",
-      "caption": "Une photo en paysage donne une porte large."
+      "type": "list",
+      "title": "Hot chocolate, the proper way",
+      "items": [
+        "Warm a mug of milk without letting it boil",
+        "Melt in a handful of dark chocolate, stirring slowly",
+        "Add a pinch of cinnamon and a pinch of salt",
+        "Whisk until it foams",
+        "Top with whipped cream, marshmallows, or both",
+        "Drink it under a blanket"
+      ]
     }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "title": "Portrait photos",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "portrait.jpg",
+      "alt": "A drawn frame marked 2:3, 480 by 720 pixels",
+      "caption": "A photo at least 1.25 times taller than wide makes a tall door."
+    }
+  ]
+}

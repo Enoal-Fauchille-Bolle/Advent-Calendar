@@ -1,20 +1,11 @@
 {
+  "title": "Candlelight",
   "blocks": [
     {
-      "type": "list",
-      "title": "Dix raisons",
-      "items": [
-        "Raison un",
-        "Raison deux",
-        "Raison trois",
-        "Raison quatre",
-        "Raison cinq",
-        "Raison six",
-        "Raison sept",
-        "Raison huit",
-        "Raison neuf",
-        "Raison dix"
-      ]
+      "type": "image",
+      "file": "candle.jpg",
+      "alt": "A candle flame in the dark",
+      "caption": "Light one tonight, and take a slow evening."
     }
   ]
 }

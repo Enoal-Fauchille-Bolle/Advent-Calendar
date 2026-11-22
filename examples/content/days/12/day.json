@@ -1,10 +1,9 @@
 {
+  "title": "Halfway there",
   "blocks": [
     {
-      "type": "image",
-      "file": "carre.jpg",
-      "alt": "Une mire de test carrée",
-      "caption": "Une photo presque carrée donne une grande porte."
+      "type": "letter",
+      "text": "Twelve doors open, thirteen to go.\n\nIf the days feel long, remember that every morning brings Christmas one step closer, and that each of these doors was filled with you in mind.\n\nKeep going."
     }
   ]
 }

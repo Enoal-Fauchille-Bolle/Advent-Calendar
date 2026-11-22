@@ -17,6 +17,6 @@
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["src", "vitest.config.ts"],
+  "include": ["src", "examples/tools", "vitest.config.ts"],
   "exclude": ["src/client", "src/sw"]
 }

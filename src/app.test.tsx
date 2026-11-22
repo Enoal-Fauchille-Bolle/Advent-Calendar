@@ -1,3 +1,6 @@
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import { createApp, type PushDeps } from "./app.tsx";
 import { hashPassword } from "./auth/password.ts";
@@ -24,10 +27,11 @@ function makeApp(
   animations: Record<string, DoorAnimation> = {},
   push?: PushDeps,
   more: Partial<Settings> = {},
+  contentDir = CONTENT,
 ) {
   return createApp({
     settings: { ...readSettings(CONTENT), sizes, animations, ...more },
-    contentDir: CONTENT,
+    contentDir,
     passwordHash,
     authorPasswordHash,
     sessionSecret: "a test secret that is long enough to sign",
@@ -160,7 +164,7 @@ describe("header", () => {
     expect(page).toContain(
       '<div class="banner" aria-label="Joyeux Noël" data-speed="25">',
     );
-    const empty = makeApp();
+    const empty = makeApp({}, {}, undefined, { banner: "" });
     const plain = await (
       await empty.request(`${ORIGIN}/`, {
         headers: { cookie: await cookieFor(empty, "guest password") },
@@ -177,7 +181,7 @@ describe("header", () => {
     ).text();
     // The title of examples/content/calendar.json, its apostrophe escaped.
     expect(page).toContain(
-      '<h1 class="header-title">Calendrier de l&#39;Avent</h1>',
+      '<h1 class="header-title">Let&#39;s count to Christmas</h1>',
     );
     expect(page).toContain('<time class="header-date" datetime="2026-12-02">');
     expect(page).toContain("Wed 2 Dec");
@@ -237,8 +241,8 @@ describe("days", () => {
       headers: { cookie },
     });
     expect(day.status).toBe(403);
-    expect(await day.text()).not.toContain("photo");
-    const media = await app.request(`${ORIGIN}/media/3/photo.png`, {
+    expect(await day.text()).not.toContain("snow-forest");
+    const media = await app.request(`${ORIGIN}/media/3/snow-forest.jpg`, {
       headers: { cookie },
     });
     expect(media.status).toBe(403);
@@ -253,15 +257,17 @@ describe("days", () => {
       headers: { cookie },
     });
     expect(day.status).toBe(200);
-    const media = await app.request(`${ORIGIN}/media/3/photo.png`, {
+    const media = await app.request(`${ORIGIN}/media/3/snow-forest.jpg`, {
       headers: { cookie },
     });
     expect(media.status).toBe(200);
-    expect(media.headers.get("content-type")).toBe("image/png");
+    expect(media.headers.get("content-type")).toBe("image/jpeg");
   });
 
   it("answers 404 for an empty door and a door out of range", async () => {
-    const app = makeApp();
+    // A content folder with no day folder: every door is empty.
+    const empty = mkdtempSync(join(tmpdir(), "advent-app-"));
+    const app = makeApp({}, {}, undefined, {}, empty);
     const cookie = await cookieFor(app, "author password");
     for (const path of ["/api/days/24", "/api/days/26", "/api/days/abc"]) {
       const response = await app.request(`${ORIGIN}${path}`, {
@@ -274,16 +280,14 @@ describe("days", () => {
   it("serves a byte range of a media file", async () => {
     const app = makeApp();
     const cookie = await cookieFor(app, "author password");
-    const response = await app.request(`${ORIGIN}/media/3/photo.png`, {
-      headers: { cookie, range: "bytes=0-7" },
+    const response = await app.request(`${ORIGIN}/media/3/snow-forest.jpg`, {
+      headers: { cookie, range: "bytes=0-2" },
     });
     expect(response.status).toBe(206);
-    expect(response.headers.get("content-range")).toMatch(/^bytes 0-7\/\d+$/);
+    expect(response.headers.get("content-range")).toMatch(/^bytes 0-2\/\d+$/);
     const bytes = new Uint8Array(await response.arrayBuffer());
-    // The PNG signature.
-    expect([...bytes]).toEqual([
-      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
-    ]);
+    // The start of every JPEG file.
+    expect([...bytes]).toEqual([0xff, 0xd8, 0xff]);
   });
 });
 

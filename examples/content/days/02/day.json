@@ -1,15 +1,10 @@
 {
-  "title": "Exemple de bon et de liste",
+  "title": "A first promise",
   "blocks": [
     {
       "type": "voucher",
-      "title": "Un resto au choix",
-      "details": "Valable tout le mois de janvier."
-    },
-    {
-      "type": "list",
-      "title": "Des choses à faire ensemble",
-      "items": ["Exemple un", "Exemple deux", "Exemple trois"]
+      "title": "A breakfast in bed",
+      "details": "Pancakes or croissants, your call. Valid any weekend morning."
     }
   ]
 }

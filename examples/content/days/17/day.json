@@ -1,0 +1,15 @@
+{
+  "title": "Lists",
+  "blocks": [
+    {
+      "type": "list",
+      "title": "What a list can hold",
+      "items": [
+        "A title, which is optional",
+        "As many items as needed",
+        "Reasons, recipes, songs, plans",
+        "A list makes a tall door"
+      ]
+    }
+  ]
+}

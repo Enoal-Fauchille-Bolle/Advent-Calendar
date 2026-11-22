@@ -1,0 +1,10 @@
+{
+  "title": "Vouchers",
+  "blocks": [
+    {
+      "type": "voucher",
+      "title": "One voucher, as a demo",
+      "details": "A voucher has a title and optional details. The words above the title come from the interface language."
+    }
+  ]
+}

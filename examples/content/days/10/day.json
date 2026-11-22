@@ -1,6 +1,11 @@
 {
+  "title": "Cookie time",
   "blocks": [
-    { "type": "text", "text": "Un texte, puis un message vocal en .wav." },
-    { "type": "audio", "file": "vocal.wav" }
+    {
+      "type": "image",
+      "file": "gingerbread.jpg",
+      "alt": "Gingerbread cookies on a white plate, red baubles behind",
+      "caption": "Gingerbread: the official smell of December."
+    }
   ]
 }

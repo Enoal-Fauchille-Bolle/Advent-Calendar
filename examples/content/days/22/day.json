@@ -1,0 +1,29 @@
+{
+  "title": "Voice messages",
+  "blocks": [
+    {
+      "type": "audio",
+      "file": "deck-the-halls.m4a",
+      "caption": "Deck the Halls, as .m4a"
+    },
+    {
+      "type": "audio",
+      "file": "deck-the-halls.ogg",
+      "caption": "The same, as .ogg"
+    },
+    {
+      "type": "audio",
+      "file": "deck-the-halls.mp3",
+      "caption": "The same, as .mp3"
+    },
+    {
+      "type": "audio",
+      "file": "deck-the-halls.wav",
+      "caption": "The same, as .wav"
+    },
+    {
+      "type": "text",
+      "text": "A recorded voice message works the same way. Audio files can be .mp3, .m4a, .aac, .ogg or .wav; photos can be .jpg, .png, .webp or .gif."
+    }
+  ]
+}

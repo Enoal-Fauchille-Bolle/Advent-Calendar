@@ -1,11 +1,18 @@
 {
-  "title": "Calendrier de l'Avent",
-  "banner": "",
-  "notification": "La porte {day} t'attend 🎄",
+  "title": "Let's count to Christmas",
+  "banner": "Merry Christmas ★ Happy holidays ★",
+  "bannerSpeed": 40,
+  "notification": "Door {day} is waiting for you 🎄",
   "year": 2026,
   "month": 12,
   "firstDay": 1,
   "lastDay": 25,
   "timezone": "Europe/Paris",
-  "unlockTime": "09:00"
+  "unlockTime": "09:00",
+  "sizes": {
+    "24": "wide"
+  },
+  "animations": {
+    "24": "none"
+  }
 }

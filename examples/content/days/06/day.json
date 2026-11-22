@@ -1,9 +1,14 @@
 {
-  "title": "Une longue lettre",
+  "title": "A little tune",
   "blocks": [
     {
-      "type": "letter",
-      "text": "Ceci est un exemple de longue lettre.\n\nQuand le texte dépasse la porte, il s'efface en bas. Toucher la porte ouverte affiche la lettre entière.\n\nUne lettre peut être écrite ici, dans le champ « text », ou dans un fichier .txt à côté de day.json, avec le champ « file ».\n\nChaque ligne vide commence un nouveau paragraphe, et les retours à la ligne sont gardés.\n\nCe dernier paragraphe n'est là que pour allonger la lettre et montrer le fondu."
+      "type": "text",
+      "text": "Yesterday's answer: a clock. Its hands are counting down to Christmas too."
+    },
+    {
+      "type": "audio",
+      "file": "jingle-bells.mp3",
+      "caption": "Jingle Bells, on a music box"
     }
   ]
 }

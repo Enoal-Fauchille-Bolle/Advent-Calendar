@@ -1,0 +1,10 @@
+{
+  "title": "Notifications",
+  "notification": "Last door: Merry Christmas! 🎄",
+  "blocks": [
+    {
+      "type": "text",
+      "text": "With notifications allowed, a device gets a message when each door opens, even with the site closed.\n\nThe message comes from \"notification\" in calendar.json, where {day} stands for the door number. A day can set its own in its day.json, like this one: \"Last door: Merry Christmas! 🎄\".\n\nThat is the whole tour. Merry Christmas, and have fun filling a calendar of your own."
+    }
+  ]
+}

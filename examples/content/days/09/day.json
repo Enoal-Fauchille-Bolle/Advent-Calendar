@@ -1,6 +1,9 @@
 {
   "blocks": [
-    { "type": "audio", "file": "vocal.ogg", "caption": "Un exemple en .ogg" },
-    { "type": "audio", "file": "vocal.mp3", "caption": "Un exemple en .mp3" }
+    {
+      "type": "voucher",
+      "title": "A film night, your pick",
+      "details": "You choose the film, the snacks are on me."
+    }
   ]
 }

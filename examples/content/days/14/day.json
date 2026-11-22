@@ -1,0 +1,14 @@
+{
+  "title": "A little turn",
+  "blocks": [
+    {
+      "type": "image",
+      "file": "gift.jpg",
+      "alt": "A red gift with a silver bow, tinsel and baubles"
+    },
+    {
+      "type": "text",
+      "text": "From tomorrow, the doors change: each one shows how this calendar works, so you can make your own."
+    }
+  ]
+}
