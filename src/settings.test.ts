@@ -17,14 +17,22 @@ const valid = {
 };
 
 describe("parseSettings", () => {
-  it("accepts valid settings and defaults the banner, sizes and animations to empty", () => {
+  it("accepts valid settings and defaults the language, banner, sizes and animations", () => {
     expect(parseSettings(valid)).toEqual({
       ...valid,
+      language: "en",
       banner: "",
       bannerSpeed: 10,
       sizes: {},
       animations: {},
     });
+  });
+
+  it("accepts a known language and refuses any other", () => {
+    expect(parseSettings({ ...valid, language: "fr" }).language).toBe("fr");
+    expect(() => parseSettings({ ...valid, language: "de" })).toThrow(
+      SettingsError,
+    );
   });
 
   it("accepts a notification sentence and refuses an empty one", () => {

@@ -1,15 +1,18 @@
-import { strings } from "../strings.ts";
+import type { Strings } from "../i18n/index.ts";
 import { Layout } from "./layout.tsx";
 
 export function LoginPage({
   title,
+  t,
   error,
 }: {
   title: string;
+  /** The interface texts. */
+  t: Strings;
   error?: string | undefined;
 }) {
   return (
-    <Layout title={title}>
+    <Layout title={title} lang={t.lang}>
       <main class="login">
         {/* Wrapping paper, ribbons and bow: drawn by the stylesheet, decoration only. */}
         <div class="gift" aria-hidden="true">
@@ -25,7 +28,7 @@ export function LoginPage({
         <div class="login-tag">
           <h1>{title}</h1>
           <form method="post" action="/login" class="login-form">
-            <label for="password">{strings.login.password}</label>
+            <label for="password">{t.login.password}</label>
             <input
               id="password"
               name="password"
@@ -39,7 +42,7 @@ export function LoginPage({
                 {error}
               </p>
             )}
-            <button type="submit">{strings.login.submit}</button>
+            <button type="submit">{t.login.submit}</button>
           </form>
         </div>
       </main>

@@ -1,7 +1,7 @@
 import { raw } from "hono/html";
 import type { Role } from "../auth/session.ts";
+import { isoDate, translation } from "../i18n/index.ts";
 import { doorAnimation, type DoorSize, type Settings } from "../settings.ts";
-import { strings } from "../strings.ts";
 import { calendarDays, isUnlocked } from "../unlock.ts";
 import { Layout } from "./layout.tsx";
 
@@ -45,13 +45,11 @@ export function CalendarPage({
   /** The VAPID public key; absent when push is off, which leaves out the bell. */
   vapidKey?: string | undefined;
 }) {
+  const t = translation(settings.language);
   // `<` cannot close the script element once escaped.
-  const clientStrings = JSON.stringify(strings.client).replaceAll(
-    "<",
-    "\\u003c",
-  );
+  const clientStrings = JSON.stringify(t.client).replaceAll("<", "\\u003c");
   return (
-    <Layout title={settings.title}>
+    <Layout title={settings.title} lang={t.lang}>
       {settings.banner === "" ? null : (
         <div
           class="banner"
@@ -66,16 +64,13 @@ export function CalendarPage({
       )}
       <header class="site-header">
         <div class="header-bar">
-          <time
-            class="header-date"
-            datetime={strings.isoDate(now, settings.timezone)}
-          >
-            {strings.shortDate(now, settings.timezone)}
+          <time class="header-date" datetime={isoDate(now, settings.timezone)}>
+            {t.shortDate(now, settings.timezone)}
           </time>
           {role === "author" ? (
             <span class="author-badge">
-              <span aria-hidden="true">{strings.calendar.authorBadge}</span>
-              <span class="visually-hidden">{strings.calendar.authorMode}</span>
+              <span aria-hidden="true">{t.calendar.authorBadge}</span>
+              <span class="visually-hidden">{t.calendar.authorMode}</span>
             </span>
           ) : null}
           {vapidKey === undefined ? null : (
@@ -88,21 +83,19 @@ export function CalendarPage({
                 hidden
               >
                 <Icon paths={BELL} />
-                <span class="header-label">
-                  {strings.calendar.notifications}
-                </span>
+                <span class="header-label">{t.calendar.notifications}</span>
               </button>
               {/* In the bell's place once notifications are allowed. */}
               {role === "author" ? (
                 <button
                   type="button"
                   class="notify notify-test"
-                  title={strings.calendar.notificationTest}
+                  title={t.calendar.notificationTest}
                   hidden
                 >
                   <Icon paths={PLANE} />
                   <span class="header-label">
-                    {strings.calendar.notificationTest}
+                    {t.calendar.notificationTest}
                   </span>
                 </button>
               ) : null}
@@ -113,7 +106,7 @@ export function CalendarPage({
               <Icon paths={DOOR_OUT} />
               {/* In author mode the badge takes room: phones get the icon alone. */}
               <span class={role === "author" ? "header-label" : undefined}>
-                {strings.calendar.logout}
+                {t.calendar.logout}
               </span>
             </button>
           </form>
@@ -131,13 +124,13 @@ export function CalendarPage({
                 data-day={String(day)}
                 data-animation={doorAnimation(settings, day)}
                 data-state={open || role === "author" ? "open" : "locked"}
-                data-unlocks={strings.unlocksOn(
+                data-unlocks={t.unlocksOn(
                   day,
                   settings.month,
                   settings.year,
                   settings.unlockTime,
                 )}
-                aria-label={strings.calendar.door(day)}
+                aria-label={t.calendar.door(day)}
               >
                 <span class="door-number">{day}</span>
               </button>
@@ -156,7 +149,7 @@ export function CalendarPage({
           autofocus
         ></div>
         <form method="dialog">
-          <button type="submit">{strings.calendar.close}</button>
+          <button type="submit">{t.calendar.close}</button>
         </form>
       </dialog>
       <script type="application/json" id="client-strings">

@@ -90,7 +90,7 @@ describe("login", () => {
     const page = await response.text();
     expect(page).toContain('data-day="1"');
     expect(page).toContain('data-day="25"');
-    expect(page).not.toContain("Mode auteur");
+    expect(page).not.toContain("Author mode");
     // Sizes come from the content: a letter on day 1, a voucher on day 2.
     expect(page).toMatch(/class="door door--tall door--p\d" data-day="1"/);
     expect(page).toMatch(/class="door door--small door--p\d" data-day="2"/);
@@ -180,12 +180,12 @@ describe("header", () => {
       '<h1 class="header-title">Calendrier de l&#39;Avent</h1>',
     );
     expect(page).toContain('<time class="header-date" datetime="2026-12-02">');
-    expect(page).toContain("Mer. 2 déc.");
+    expect(page).toContain("Wed 2 Dec");
     // Push is off here: no bell ("web push" below covers it).
     expect(page).not.toContain('class="notify"');
     expect(page).not.toContain("author-badge");
     // The visitor's logout keeps its label on every screen.
-    expect(page).toContain("<span>Se déconnecter</span>");
+    expect(page).toContain("<span>Log out</span>");
   });
 
   it("gives the author a badge and an icon-only logout on phones", async () => {
@@ -195,7 +195,22 @@ describe("header", () => {
       await app.request(`${ORIGIN}/`, { headers: { cookie } })
     ).text();
     expect(page).toContain('class="author-badge"');
-    expect(page).toContain('<span class="header-label">Se déconnecter</span>');
+    expect(page).toContain('<span class="header-label">Log out</span>');
+  });
+
+  it("speaks the language of the settings", async () => {
+    const app = makeApp({}, {}, undefined, { language: "fr" });
+    const cookie = await cookieFor(app, "guest password");
+    const page = await (
+      await app.request(`${ORIGIN}/`, { headers: { cookie } })
+    ).text();
+    expect(page).toContain('<html lang="fr">');
+    expect(page).toContain("Mer. 2 déc.");
+    expect(page).toContain("<span>Se déconnecter</span>");
+    expect(page).toContain('data-unlocks="le 3 décembre à 09:00"');
+    expect(page).toContain('"voucher":"Bon pour"');
+    const login = await (await app.request(`${ORIGIN}/login`)).text();
+    expect(login).toContain('<label for="password">Mot de passe</label>');
   });
 });
 
@@ -233,7 +248,7 @@ describe("days", () => {
     const app = makeApp();
     const cookie = await cookieFor(app, "author password");
     const page = await app.request(`${ORIGIN}/`, { headers: { cookie } });
-    expect(await page.text()).toContain("Mode auteur");
+    expect(await page.text()).toContain("Author mode");
     const day = await app.request(`${ORIGIN}/api/days/3`, {
       headers: { cookie },
     });

@@ -1,15 +1,15 @@
 import { raw } from "hono/html";
 import type { PropsWithChildren } from "hono/jsx";
-import { strings } from "../strings.ts";
 
 export function Layout({
   title,
+  lang,
   children,
-}: PropsWithChildren<{ title: string }>) {
+}: PropsWithChildren<{ title: string; lang: string }>) {
   return (
     <>
       {raw("<!DOCTYPE html>")}
-      <html lang={strings.lang}>
+      <html lang={lang}>
         <head>
           <meta charset="utf-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1" />

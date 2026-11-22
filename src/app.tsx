@@ -14,12 +14,12 @@ import {
 import type { LoginThrottle } from "./auth/throttle.ts";
 import { ICON_SIZES } from "./client-script.ts";
 import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
+import { translation } from "./i18n/index.ts";
 import { CalendarPage } from "./pages/calendar.tsx";
 import { LoginPage } from "./pages/login.tsx";
 import type { TestResult } from "./push/schedule.ts";
 import { type PushStore, subscriptionSchema } from "./push/store.ts";
 import type { DoorSize, Settings } from "./settings.ts";
-import { strings } from "./strings.ts";
 import { calendarDays, isInRange, isUnlocked } from "./unlock.ts";
 
 export interface AppDeps {
@@ -95,6 +95,7 @@ function parseRange(
 export function createApp(deps: AppDeps): Hono<Env> {
   const { settings, contentDir, throttle } = deps;
   const now = deps.now ?? (() => new Date());
+  const t = translation(settings.language);
   const app = new Hono<Env>();
 
   app.use(async (c, next) => {
@@ -168,7 +169,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
   app.get("/login", async (c) => {
     if ((await readRole(c)) !== null) return c.redirect("/");
-    return c.html(<LoginPage title={settings.title} />);
+    return c.html(<LoginPage title={settings.title} t={t} />);
   });
 
   app.post("/login", bodyLimit({ maxSize: 16 * 1024 }), async (c) => {
@@ -177,7 +178,8 @@ export function createApp(deps: AppDeps): Hono<Env> {
       return c.html(
         <LoginPage
           title={settings.title}
-          error={strings.login.tooMany(wait)}
+          t={t}
+          error={t.login.tooMany(wait)}
         />,
         429,
       );
@@ -197,7 +199,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
     }
     if (role === null) {
       return c.html(
-        <LoginPage title={settings.title} error={strings.login.wrong} />,
+        <LoginPage title={settings.title} t={t} error={t.login.wrong} />,
         401,
       );
     }

@@ -92,7 +92,7 @@ describe("sendDueDoor", () => {
     ]);
     expect(sent[0]?.message).toEqual({
       title: "Calendrier de l'Avent",
-      body: "La porte 5 est ouverte 🎁",
+      body: "Door 5 is open 🎁",
       tag: "door-5",
       url: "/",
     });
@@ -166,7 +166,7 @@ describe("sendDueDoor", () => {
     });
     setNow(at("2026-12-05T08:00:00Z"));
     await sendDueDoor(deps);
-    expect(sent[0]?.message.body).toBe("La porte 5 est ouverte 🎁");
+    expect(sent[0]?.message.body).toBe("Door 5 is open 🎁");
     expect(lines[0]).toMatch(/^Invalid .*day\.json/);
   });
 

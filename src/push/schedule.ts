@@ -1,6 +1,6 @@
 import { DayError, dayNotification } from "../days.ts";
 import type { Settings } from "../settings.ts";
-import { strings } from "../strings.ts";
+import { translation } from "../i18n/index.ts";
 import { isUnlocked, localDateTime } from "../unlock.ts";
 import type { PushStore, Subscription } from "./store.ts";
 
@@ -56,7 +56,10 @@ function doorText(deps: PushDeps, day: number): string {
     if (!(error instanceof DayError)) throw error;
     deps.log(error.message);
   }
-  const text = own ?? deps.settings.notification ?? strings.push.door;
+  const text =
+    own ??
+    deps.settings.notification ??
+    translation(deps.settings.language).push.door;
   return text.replaceAll("{day}", String(day));
 }
 
@@ -137,7 +140,7 @@ export async function sendTest(
   if (subscription === undefined) return "unknown";
   const message: PushMessage = {
     title: deps.settings.title,
-    body: strings.push.test,
+    body: translation(deps.settings.language).push.test,
     tag: "test",
     url: "/",
   };

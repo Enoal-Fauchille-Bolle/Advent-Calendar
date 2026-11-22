@@ -4,7 +4,7 @@ A password-protected advent calendar for one person, self-hosted. Each door open
 
 The server keeps each surprise until its door opens: a locked day and its media answer `403`, so reading the page source or guessing a URL reveals nothing early. An optional author password opens every door ahead of time, to check the content.
 
-The interface is in French.
+The interface is in English or French, chosen with `language` in `calendar.json`.
 
 ## Content
 
@@ -24,20 +24,21 @@ content/
 
 ### `calendar.json`
 
-| Key            | Meaning                                                                                              | Example           |
-| -------------- | ---------------------------------------------------------------------------------------------------- | ----------------- |
-| `title`        | Page title                                                                                           | `"Calendrier"`    |
-| `banner`       | Scrolling text at the top; `""` or absent hides it                                                   | `"Joyeux Noël ★"` |
-| `bannerSpeed`  | Speed of the banner text, in pixels per second, above 0; absent: 10                                  | `40`              |
-| `notification` | Notification sent when a door opens, `{day}` for its number; absent: "La porte {day} est ouverte 🎁" | `"Porte {day} !"` |
-| `year`         | Year of the calendar                                                                                 | `2026`            |
-| `month`        | Month, 1 to 12                                                                                       | `12`              |
-| `firstDay`     | First door                                                                                           | `1`               |
-| `lastDay`      | Last door                                                                                            | `25`              |
-| `timezone`     | IANA time zone the unlock time is read in                                                            | `"Europe/Paris"`  |
-| `unlockTime`   | Local time at which door N opens on day N, `HH:MM`, 24 hours                                         | `"09:00"`         |
-| `sizes`        | Door sizes chosen by hand, by door number (see below)                                                | `{ "5": "big" }`  |
-| `animations`   | Opening animations chosen by hand, by door number (see below)                                        | `{ "7": "tear" }` |
+| Key            | Meaning                                                                                                              | Example           |
+| -------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| `title`        | Page title                                                                                                           | `"Calendrier"`    |
+| `language`     | Language of the interface: `en` or `fr`; absent: `en`                                                                | `"fr"`            |
+| `banner`       | Scrolling text at the top; `""` or absent hides it                                                                   | `"Joyeux Noël ★"` |
+| `bannerSpeed`  | Speed of the banner text, in pixels per second, above 0; absent: 10                                                  | `40`              |
+| `notification` | Notification sent when a door opens, `{day}` for its number; absent: "Door {day} is open 🎁", in the chosen language | `"Door {day}!"`   |
+| `year`         | Year of the calendar                                                                                                 | `2026`            |
+| `month`        | Month, 1 to 12                                                                                                       | `12`              |
+| `firstDay`     | First door                                                                                                           | `1`               |
+| `lastDay`      | Last door                                                                                                            | `25`              |
+| `timezone`     | IANA time zone the unlock time is read in                                                                            | `"Europe/Paris"`  |
+| `unlockTime`   | Local time at which door N opens on day N, `HH:MM`, 24 hours                                                         | `"09:00"`         |
+| `sizes`        | Door sizes chosen by hand, by door number (see below)                                                                | `{ "5": "big" }`  |
+| `animations`   | Opening animations chosen by hand, by door number (see below)                                                        | `{ "7": "tear" }` |
 
 The server reads `calendar.json` once at start: restart it after a change. Day folders are read on each request, so a day can be added or fixed while the server runs.
 

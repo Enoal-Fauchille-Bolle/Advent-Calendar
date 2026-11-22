@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { z } from "zod";
+import { DEFAULT_LANGUAGE, LANGUAGES } from "./i18n/index.ts";
 
 /** The settings file, at the root of the content folder. */
 export const SETTINGS_FILE = "calendar.json";
@@ -68,14 +69,16 @@ function inRange(
 const settingsSchema = z
   .strictObject({
     title: z.string().min(1),
+    /** Language of the interface, such as `en` or `fr`. */
+    language: z.enum(LANGUAGES).default(DEFAULT_LANGUAGE),
     /** Scrolling text at the top of the page; empty hides the banner. */
     banner: z.string().default(""),
     /** Speed of the banner text, in pixels per second. */
     bannerSpeed: z.number().positive().default(10),
     /**
      * The notification sent when a door opens, `{day}` standing for its number; a
-     * day's own `notification` replaces it for that day. Absent: a sentence of
-     * `strings.ts`.
+     * day's own `notification` replaces it for that day. Absent: a sentence in
+     * the interface language.
      */
     notification: z.string().min(1).optional(),
     year: z.int().min(2000).max(9999),
