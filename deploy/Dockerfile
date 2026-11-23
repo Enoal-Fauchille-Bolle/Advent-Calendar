@@ -30,6 +30,8 @@ COPY package.json ./
 COPY --from=prod-deps /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY assets ./assets
+# The example calendar, to try the image: ADVENT_CONTENT_DIR=/app/examples/content.
+COPY examples/content ./examples/content
 # The only folder the server writes: push subscriptions and the days already sent.
 RUN install -d -o node -g node /state
 USER node
