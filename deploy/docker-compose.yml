@@ -1,20 +1,21 @@
-# Start:   docker compose -f deploy/docker-compose.yml up -d --build
-# Secrets: deploy/.env, see "Run with Docker" in README.md
+# Advent-Calendar: https://github.com/Enoal-Fauchille-Bolle/Advent-Calendar
+# Start:   docker compose up -d
+# Secrets: .env next to this file, see docs/hosting.md
 services:
   advent-calendar:
-    image: ghcr.io/enoal-fauchille-bolle/advent-calendar:latest
-    build:
-      context: ..
-      dockerfile: deploy/Dockerfile
+    image: ghcr.io/enoal-fauchille-bolle/advent-calendar:0.3.0
     restart: unless-stopped
     env_file: .env
+    # To try the examples bundled in the image instead of your own content, uncomment:
+    # environment:
+    #   ADVENT_CONTENT_DIR: /app/examples/content
     ports:
       # Reachable from this machine only, for a reverse proxy on the same host.
-      # ADVENT_BIND=0.0.0.0 in deploy/.env opens it to the network.
+      # ADVENT_BIND=0.0.0.0 in .env opens it to the network.
       - "${ADVENT_BIND:-127.0.0.1}:${ADVENT_PUBLISHED_PORT:-3000}:3000"
     volumes:
       # The surprises, read-only: the server never writes them.
-      - "${ADVENT_CONTENT:-../examples/content}:/content:ro"
+      - "${ADVENT_CONTENT:-./content}:/content:ro"
       # Push subscriptions and the days already sent, when ADVENT_VAPID_PRIVATE_KEY is set.
       - state:/state
     # The image has no curl or wget, so Node itself asks /healthz.
