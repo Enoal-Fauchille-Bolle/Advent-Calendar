@@ -62,6 +62,8 @@ printf 'ADVENT_PASSWORD_HASH=%s\nADVENT_SESSION_SECRET=%s\n' \
   "$(openssl rand -base64 48)" > .env
 ```
 
+The author password and the notifications are optional: see [Hosting](docs/hosting.md#docker).
+
 Put the calendar in `content/` (see [Writing the content](docs/content.md)), or uncomment the `environment` lines to try the examples. Then run `docker compose up -d` and open `http://127.0.0.1:3000`.
 
 ### Without Docker
