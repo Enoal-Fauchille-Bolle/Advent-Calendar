@@ -1,15 +1,33 @@
-# Advent-Calendar
+<p align="center">
+  <img src="assets/icons/icon.svg" alt="" width="96" height="96">
+</p>
 
-A password-protected advent calendar for one person, self-hosted. Each door opens at a set time on its day and holds a surprise: a letter, a list, a voucher, photos or a voice message.
+<h1 align="center">Advent-Calendar</h1>
 
-The server keeps each surprise until its door opens: a locked day and its media answer `403`, so reading the page source or guessing a URL reveals nothing early. An optional author password opens every door ahead of time, to check the content.
+<p align="center">A self-hosted advent calendar with a surprise behind each door</p>
 
-The interface is in English or French, chosen with `language` in `calendar.json`.
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/Enoal-Fauchille-Bolle/Advent-Calendar?label=License"></a>
+  <a href="https://github.com/Enoal-Fauchille-Bolle/Advent-Calendar/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Enoal-Fauchille-Bolle/Advent-Calendar?label=Release"></a>
+  <a href="https://github.com/Enoal-Fauchille-Bolle/Advent-Calendar/pkgs/container/advent-calendar"><img alt="Docker image on GHCR" src="https://img.shields.io/badge/ghcr.io-image-blue?logo=docker&logoColor=white"></a>
+</p>
+
+<p align="center">
+  <a href="docs/content.md">Writing the content</a> · <a href="docs/hosting.md">Hosting</a> · <a href="CONTRIBUTING.md">Contributing</a>
+</p>
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/screenshot-dark.png">
   <img alt="The example calendar on a desktop, a tablet and a phone" src="docs/images/screenshot-light.png">
 </picture>
+
+## Features
+
+- **A door a day**: each door opens at a set time on its day and holds a letter, a list, a voucher, photos or a voice message.
+- **Nothing shows early**: the server refuses a locked door and its media, even to someone reading the page source or guessing a link.
+- **Author preview**: an optional second password opens every door ahead of time, to check the content.
+- **Notifications**: an optional push notification when a door opens.
+- **English or French**: set with `language` in `calendar.json`.
 
 ## Quick start
 
