@@ -634,6 +634,8 @@ button {
   padding: 1.9rem 0.6rem 0.6rem;
   font-size: 0.8rem;
   line-height: 1.35;
+  /* A word wider than the door breaks at its edge instead of running out of it. */
+  overflow-wrap: anywhere;
   /* Text longer than the door fades out at the bottom. */
   mask-image: linear-gradient(to bottom, black 70%, transparent);
 }
@@ -915,6 +917,8 @@ button {
   border-radius: var(--radius);
   background: var(--card);
   color: var(--ink);
+  /* A word wider than the dialog breaks at its edge instead of running out of it. */
+  overflow-wrap: anywhere;
 }
 
 /* While the dialog is open, the page behind it does not scroll, and a scroll that
