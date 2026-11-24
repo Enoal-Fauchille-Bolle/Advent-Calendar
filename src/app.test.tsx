@@ -1,4 +1,4 @@
-import { mkdtempSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -232,6 +232,26 @@ describe("days", () => {
     });
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ day: 2 });
+  });
+
+  it("keeps French punctuation on the line of its word", async () => {
+    const content = mkdtempSync(join(tmpdir(), "advent-app-"));
+    mkdirSync(join(content, "days", "01"), { recursive: true });
+    writeFileSync(
+      join(content, "days", "01", "day.json"),
+      JSON.stringify({ blocks: [{ type: "text", text: "Coucou !" }] }),
+    );
+    for (const [language, text] of [
+      ["fr", "Coucou !"],
+      ["en", "Coucou !"],
+    ] as const) {
+      const app = makeApp({}, {}, undefined, { language }, content);
+      const cookie = await cookieFor(app, "guest password");
+      const response = await app.request(`${ORIGIN}/api/days/1`, {
+        headers: { cookie },
+      });
+      expect(await response.json()).toMatchObject({ blocks: [{ text }] });
+    }
   });
 
   it("refuses a day before its time, and its media", async () => {

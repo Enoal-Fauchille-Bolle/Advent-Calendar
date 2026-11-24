@@ -15,6 +15,7 @@ import type { LoginThrottle } from "./auth/throttle.ts";
 import { ICON_SIZES } from "./client-script.ts";
 import { DayError, doorSize, findMedia, loadDay } from "./days.ts";
 import { translation } from "./i18n/index.ts";
+import { polishDay } from "./i18n/typography.ts";
 import { CalendarPage } from "./pages/calendar.tsx";
 import { LoginPage } from "./pages/login.tsx";
 import type { TestResult } from "./push/schedule.ts";
@@ -279,7 +280,7 @@ export function createApp(deps: AppDeps): Hono<Env> {
       const shown = loadDay(contentDir, day);
       if (shown === null) return c.json({ error: "empty" }, 404);
       c.header("Cache-Control", "private, no-store");
-      return c.json(shown);
+      return c.json(polishDay(shown, settings.language));
     } catch (error) {
       if (!(error instanceof DayError)) throw error;
       console.error(`${now().toISOString()} ${error.message}`);

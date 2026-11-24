@@ -61,6 +61,7 @@ The server reads `calendar.json` once at start: restart it after a change. Day f
 ```
 
 - `text` and `letter` take either `text` or `file` (a text file in the same folder). Blank lines separate paragraphs.
+- With `"language": "fr"`, a space typed before `: ; ! ?` or `»`, or after `«`, becomes a no-break space, so the sign never starts a line. No space is added where none was typed.
 - File names are plain names in the day's folder, without any folder part.
 - Images: `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif`. Audio: `.mp3`, `.m4a`, `.aac`, `.ogg`, `.wav`.
 - A door with no folder shows as empty once open.
