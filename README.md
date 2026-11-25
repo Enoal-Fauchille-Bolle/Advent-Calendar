@@ -42,7 +42,7 @@ In an empty folder, save this as `docker-compose.yml`:
 # Secrets: .env next to this file, see docs/hosting.md
 services:
   advent-calendar:
-    image: ghcr.io/enoal-fauchille-bolle/advent-calendar:0.3.0
+    image: ghcr.io/enoal-fauchille-bolle/advent-calendar:0.3.1
     restart: unless-stopped
     env_file: .env
     # To try the examples bundled in the image instead of your own content, uncomment:
