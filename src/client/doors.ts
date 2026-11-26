@@ -26,6 +26,11 @@ interface ClientStrings {
   testSent: string;
   testUnknown: string;
   testFailed: string;
+  checking: string;
+  checkOk: string;
+  checkEmpty: string;
+  checkProblem: string;
+  checkFailed: string;
 }
 
 const strings = JSON.parse(
@@ -409,6 +414,159 @@ document.addEventListener("click", (event) => {
   if (!(target instanceof Element)) return;
   const door = target.closest<HTMLButtonElement>("button.door");
   if (door !== null) void openDoor(door);
+});
+
+// Author mode: the toolbar above the doors. Its tools change the view in this browser
+// only; the page leaves the toolbar out for visitors.
+const tools = document.querySelector<HTMLElement>(".author-tools");
+const toolResult = tools?.querySelector<HTMLElement>(".tools-result");
+const doorGrid = document.querySelector<HTMLElement>(".doors");
+
+/** Time between two doors when "open all" opens them one after another. */
+const OPEN_ALL_DELAY = 80;
+
+function allDoors(): HTMLButtonElement[] {
+  return [...document.querySelectorAll<HTMLButtonElement>("button.door")];
+}
+
+/** Turns the toolbar off while a long tool runs, so two never overlap. */
+async function busy(task: () => Promise<void>): Promise<void> {
+  const controls =
+    tools?.querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+      "button, input",
+    ) ?? [];
+  for (const control of controls) control.disabled = true;
+  try {
+    await task();
+  } finally {
+    for (const control of controls) control.disabled = false;
+  }
+}
+
+/**
+ * Opens every door the author may open and has not opened yet, one after another, each
+ * with its own animation. An empty or broken door stays shut, without a message;
+ * "check content" lists them.
+ */
+async function openAll(): Promise<void> {
+  const closed = allDoors().filter(
+    (door) =>
+      door.dataset.state === "open" &&
+      door.dataset.opened !== "true" &&
+      door.dataset.opening !== "true",
+  );
+  // Every day is fetched first, so that the motions start on time.
+  const fetchedDays = await Promise.all(
+    closed.map((door) => fetchDay(door.dataset.day ?? "")),
+  );
+  const ready = closed.flatMap((door, index) => {
+    const shown = fetchedDays[index];
+    return shown === undefined || typeof shown === "string"
+      ? []
+      : [{ door, shown }];
+  });
+  await Promise.all(
+    ready.map(async ({ door, shown }, index) => {
+      await new Promise((resolve) =>
+        setTimeout(resolve, index * OPEN_ALL_DELAY),
+      );
+      remember(door.dataset.day ?? "");
+      door.dataset.opening = "true";
+      await openFirstTime(door, shown);
+      delete door.dataset.opening;
+    }),
+  );
+}
+
+/** Closes every door and forgets them in this browser, as on a first visit. */
+function closeAll(): void {
+  for (const door of allDoors()) {
+    door.querySelector(".door-preview")?.remove();
+    delete door.dataset.opened;
+  }
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Without storage, no door was remembered.
+  }
+}
+
+/**
+ * Shows the doors as a visitor sees them now: a door before its date is locked, and
+ * its preview hidden. Switched off, the doors the author had opened open again.
+ */
+function visitorView(on: boolean): void {
+  const remembered = openedDays();
+  for (const door of allDoors()) {
+    if (door.dataset.unlocked !== "false") continue;
+    door.dataset.state = on ? "locked" : "open";
+    if (on) {
+      door.querySelector(".door-preview")?.remove();
+      delete door.dataset.opened;
+    } else if (remembered.has(door.dataset.day ?? "")) {
+      void fetchDay(door.dataset.day ?? "").then((shown) => {
+        if (typeof shown !== "string") fill(door, shown);
+      });
+    }
+  }
+}
+
+function showResult(...nodes: Node[]): void {
+  if (toolResult === null || toolResult === undefined) return;
+  toolResult.replaceChildren(...nodes);
+  toolResult.hidden = false;
+}
+
+/** Asks the server to read every day, and lists the broken and empty ones. */
+async function checkContent(): Promise<void> {
+  showResult(element("p", "", strings.checking));
+  try {
+    const response = await fetch("/api/check", {
+      headers: { Accept: "application/json" },
+    });
+    if (!response.ok) throw new Error(`check: ${String(response.status)}`);
+    const { empty, problems } = (await response.json()) as {
+      empty: number[];
+      problems: { day: number; message: string }[];
+    };
+    const nodes: Node[] = [];
+    if (problems.length === 0) nodes.push(element("p", "", strings.checkOk));
+    for (const { day, message } of problems) {
+      nodes.push(
+        element(
+          "p",
+          "check-door",
+          strings.checkProblem.replace("{day}", String(day)),
+        ),
+        element("pre", "check-message", message),
+      );
+    }
+    if (empty.length > 0) {
+      nodes.push(element("p", "", `${strings.checkEmpty} ${empty.join(", ")}`));
+    }
+    showResult(...nodes);
+  } catch {
+    showResult(element("p", "", strings.checkFailed));
+  }
+}
+
+tools?.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) return;
+  const tool =
+    target.closest<HTMLButtonElement>("button[data-tool]")?.dataset.tool;
+  if (tool === "open-all") void busy(openAll);
+  else if (tool === "close-all") closeAll();
+  else if (tool === "check") void busy(checkContent);
+});
+
+tools?.addEventListener("change", (event) => {
+  const input = event.target;
+  if (!(input instanceof HTMLInputElement)) return;
+  if (input.dataset.tool === "visitor-view") visitorView(input.checked);
+  else if (input.dataset.tool === "unlock-dates" && doorGrid !== null) {
+    doorGrid.dataset.dates = input.checked ? "shown" : "hidden";
+  }
 });
 
 // The bell asks the browser's permission for notifications. It shows while the answer

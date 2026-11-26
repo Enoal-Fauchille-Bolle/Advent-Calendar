@@ -226,6 +226,8 @@ describe("header", () => {
     // Push is off here: no bell ("web push" below covers it).
     expect(page).not.toContain('class="notify"');
     expect(page).not.toContain("author-badge");
+    expect(page).not.toContain("author-tools");
+    expect(page).not.toContain("data-unlocked");
     // The visitor's logout keeps its label on every screen.
     expect(page).toContain("<span>Log out</span>");
   });
@@ -238,6 +240,22 @@ describe("header", () => {
     ).text();
     expect(page).toContain('class="author-badge"');
     expect(page).toContain('<span class="header-label">Log out</span>');
+  });
+
+  it("gives the author the toolbar and the doors' opening dates", async () => {
+    const app = makeApp();
+    const cookie = await cookieFor(app, "author password");
+    const page = await (
+      await app.request(`${ORIGIN}/`, { headers: { cookie } })
+    ).text();
+    expect(page).toContain('aria-label="Author tools"');
+    expect(page).toContain('data-tool="open-all"');
+    // On December 2, door 2 is open to visitors and door 3 is not yet.
+    expect(page).toMatch(/data-day="2"[^>]*data-unlocked="true"/);
+    expect(page).toMatch(/data-day="3"[^>]*data-unlocked="false"/);
+    expect(page).toContain(
+      '<span class="door-date" aria-hidden="true">3 Dec, 09:00</span>',
+    );
   });
 
   it("speaks the language of the settings", async () => {
@@ -333,6 +351,44 @@ describe("days", () => {
       });
       expect(response.status).toBe(404);
     }
+  });
+
+  it("checks every day for the author only", async () => {
+    // Day 1 is fine, day 2 is broken, day 3 names a missing file; the rest are empty.
+    const content = mkdtempSync(join(tmpdir(), "advent-app-"));
+    const write = (day: string, text: string) => {
+      mkdirSync(join(content, "days", day), { recursive: true });
+      writeFileSync(join(content, "days", day, "day.json"), text);
+    };
+    write("01", JSON.stringify({ blocks: [{ type: "text", text: "Hi" }] }));
+    write("02", "{ not json");
+    write(
+      "03",
+      JSON.stringify({ blocks: [{ type: "image", file: "gone.jpg" }] }),
+    );
+    const app = makeApp({}, {}, undefined, {}, content);
+
+    const guest = await cookieFor(app, "guest password");
+    const refused = await app.request(`${ORIGIN}/api/check`, {
+      headers: { cookie: guest },
+    });
+    expect(refused.status).toBe(403);
+
+    const author = await cookieFor(app, "author password");
+    const response = await app.request(`${ORIGIN}/api/check`, {
+      headers: { cookie: author },
+    });
+    expect(response.status).toBe(200);
+    const { empty, problems } = (await response.json()) as {
+      empty: number[];
+      problems: { day: number; message: string }[];
+    };
+    expect(empty).toEqual(Array.from({ length: 22 }, (_, i) => i + 4));
+    expect(problems.map(({ day }) => day)).toEqual([2, 3]);
+    // Paths start at the content folder, as the author writes them.
+    expect(problems[0]?.message).toMatch(/^Cannot read days\/02\/day\.json: /);
+    expect(problems[1]?.message).toContain("gone.jpg does not exist");
+    expect(problems[1]?.message).not.toContain(content);
   });
 
   it("serves a byte range of a media file", async () => {

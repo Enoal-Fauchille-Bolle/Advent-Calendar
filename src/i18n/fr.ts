@@ -19,6 +19,14 @@ export const fr: Strings = {
     logout: "Se déconnecter",
     close: "Fermer",
   },
+  tools: {
+    label: "Outils de l'auteur",
+    openAll: "Tout ouvrir",
+    closeAll: "Tout fermer",
+    visitorView: "Vue visiteur",
+    unlockDates: "Dates d'ouverture",
+    check: "Vérifier le contenu",
+  },
   client: {
     loading: "Ouverture…",
     locked: "Patience, cette porte s'ouvre",
@@ -31,6 +39,11 @@ export const fr: Strings = {
     testUnknown:
       "Cet appareil n'est pas enregistré pour les notifications. Recharge la page puis réessaie.",
     testFailed: "L'envoi a échoué. Réessaie dans un instant.",
+    checking: "Vérification…",
+    checkOk: "Toutes les portes se lisent correctement.",
+    checkEmpty: "Encore vides :",
+    checkProblem: "Porte {day}",
+    checkFailed: "La vérification a échoué. Réessaie dans un instant.",
   },
   share: {
     title: "Calendrier de l'Avent",
@@ -53,4 +66,7 @@ export const fr: Strings = {
   /** "le 7 décembre à 09:00" */
   unlocksOn: (day, month, year, time) =>
     `le ${formatDay("fr-FR", day, month, year, { day: "numeric", month: "long" })} à ${time}`,
+  /** "7 déc., 09:00" */
+  doorDate: (day, month, year, time) =>
+    `${formatDay("fr-FR", day, month, year, { day: "numeric", month: "short" })}, ${time}`,
 };

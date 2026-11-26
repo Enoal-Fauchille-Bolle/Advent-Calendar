@@ -1,6 +1,6 @@
 import { raw } from "hono/html";
 import type { Role } from "../auth/session.ts";
-import { isoDate, translation } from "../i18n/index.ts";
+import { isoDate, type Strings, translation } from "../i18n/index.ts";
 import { doorAnimation, type DoorSize, type Settings } from "../settings.ts";
 import { calendarDays, isUnlocked } from "../unlock.ts";
 import { Layout } from "./layout.tsx";
@@ -27,6 +27,38 @@ function Icon({ paths }: { paths: readonly string[] }) {
         <path d={d} />
       ))}
     </svg>
+  );
+}
+
+/**
+ * The author's toolbar: viewing tools, run in this browser only. Nothing it does
+ * changes the content or what visitors see.
+ */
+function AuthorTools({ t }: { t: Strings }) {
+  return (
+    <section class="author-tools" aria-label={t.tools.label}>
+      <div class="tools-row">
+        <button type="button" data-tool="open-all">
+          {t.tools.openAll}
+        </button>
+        <button type="button" data-tool="close-all">
+          {t.tools.closeAll}
+        </button>
+        <label class="tool-switch">
+          {/* autocomplete off: a reload starts with the switch off, as the view does. */}
+          <input type="checkbox" data-tool="visitor-view" autocomplete="off" />
+          {t.tools.visitorView}
+        </label>
+        <label class="tool-switch">
+          <input type="checkbox" data-tool="unlock-dates" autocomplete="off" />
+          {t.tools.unlockDates}
+        </label>
+        <button type="button" data-tool="check">
+          {t.tools.check}
+        </button>
+      </div>
+      <div class="tools-result" role="status" hidden></div>
+    </section>
   );
 }
 
@@ -113,17 +145,21 @@ export function CalendarPage({
         </div>
         <h1 class="header-title">{settings.title}</h1>
       </header>
+      {role === "author" ? <AuthorTools t={t} /> : null}
       <main class="calendar">
         <div class="doors">
           {calendarDays(settings).map((day) => {
             const open = isUnlocked(day, settings, now);
+            const author = role === "author";
             return (
               <button
                 type="button"
                 class={`door door--${sizes.get(day) ?? "small"} door--p${String((day * 5) % PATTERNS)}`}
                 data-day={String(day)}
                 data-animation={doorAnimation(settings, day)}
-                data-state={open || role === "author" ? "open" : "locked"}
+                data-state={open || author ? "open" : "locked"}
+                // Whether a visitor may open it now: the toolbar's visitor view.
+                data-unlocked={author ? String(open) : undefined}
                 data-unlocks={t.unlocksOn(
                   day,
                   settings.month,
@@ -133,6 +169,16 @@ export function CalendarPage({
                 aria-label={t.calendar.door(day)}
               >
                 <span class="door-number">{day}</span>
+                {author ? (
+                  <span class="door-date" aria-hidden="true">
+                    {t.doorDate(
+                      day,
+                      settings.month,
+                      settings.year,
+                      settings.unlockTime,
+                    )}
+                  </span>
+                ) : null}
               </button>
             );
           })}

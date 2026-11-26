@@ -498,6 +498,97 @@ button {
   }
 }
 
+/* Author's toolbar, under the header: small buttons and switches that wrap on a
+   phone. A dashed mustard line, the colour of the author badge, marks it as the
+   author's own. */
+
+.author-tools {
+  padding: 0.6rem 1rem;
+  border-bottom: 2px dashed var(--mustard);
+  background: var(--card);
+}
+
+.tools-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.tools-row button,
+.tool-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0.25rem 0.7rem;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+.tools-row button:disabled,
+.tool-switch:has(input:disabled) {
+  opacity: 0.5;
+}
+
+.tool-switch {
+  cursor: pointer;
+}
+
+.tool-switch input {
+  margin: 0;
+  accent-color: var(--accent);
+}
+
+.tool-switch:has(input:checked) {
+  border-color: var(--wine);
+  background: var(--wine);
+  color: var(--on-wine);
+}
+
+.tool-switch:has(input:checked) input {
+  accent-color: var(--on-wine);
+}
+
+.tools-result {
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+}
+
+.tools-result[hidden] {
+  display: none;
+}
+
+.tools-result p {
+  margin: 0.2rem 0;
+}
+
+.check-door {
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.check-message {
+  margin: 0 0 0.5rem;
+  padding: 0.5rem 0.7rem;
+  border-radius: var(--radius);
+  background: var(--error-bg);
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+@media (min-width: 40rem) {
+  .author-tools {
+    padding: 0.6rem 2rem;
+  }
+}
+
 /* Calendar: a placeholder grid until the collage layout lands. */
 
 .calendar {
@@ -606,6 +697,37 @@ button {
 .door--p5,
 .door--p5 .door-face {
   background: var(--pine);
+}
+
+/* Author mode: when each door opens, shown on demand from the toolbar, above the
+   preview and the opening motion. Mustard for a door still locked to visitors. */
+
+.door-date {
+  display: none;
+  position: absolute;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  z-index: 3;
+  padding: 0.05rem 0.45rem;
+  border: 1px solid var(--muted);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.door[data-unlocked="false"] .door-date {
+  border-color: var(--mustard);
+  background: var(--mustard);
+  /* Dark text on mustard in both modes, as on the author badge. */
+  color: #3a1420;
+}
+
+.doors[data-dates="shown"] .door-date {
+  display: block;
 }
 
 /* An opened door: its preview replaces the pattern, at the same size. */

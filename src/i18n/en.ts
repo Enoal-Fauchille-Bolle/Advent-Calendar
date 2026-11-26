@@ -18,6 +18,14 @@ export const en: Strings = {
     logout: "Log out",
     close: "Close",
   },
+  tools: {
+    label: "Author tools",
+    openAll: "Open all",
+    closeAll: "Close all",
+    visitorView: "Visitor view",
+    unlockDates: "Opening dates",
+    check: "Check content",
+  },
   client: {
     loading: "Opening…",
     locked: "Patience, this door opens",
@@ -30,6 +38,11 @@ export const en: Strings = {
     testUnknown:
       "This device is not registered for notifications. Reload the page, then try again.",
     testFailed: "Sending failed. Try again in a moment.",
+    checking: "Checking…",
+    checkOk: "Every door reads correctly.",
+    checkEmpty: "Still empty:",
+    checkProblem: "Door {day}",
+    checkFailed: "The check failed. Try again in a moment.",
   },
   share: {
     title: "Advent calendar",
@@ -50,4 +63,7 @@ export const en: Strings = {
   /** "on 7 December at 09:00" */
   unlocksOn: (day, month, year, time) =>
     `on ${formatDay("en-GB", day, month, year, { day: "numeric", month: "long" })} at ${time}`,
+  /** "7 Dec, 09:00" */
+  doorDate: (day, month, year, time) =>
+    `${formatDay("en-GB", day, month, year, { day: "numeric", month: "short" })}, ${time}`,
 };

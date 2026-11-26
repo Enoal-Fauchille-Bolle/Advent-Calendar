@@ -17,6 +17,15 @@ export interface Strings {
     logout: string;
     close: string;
   };
+  /** The author's toolbar, above the doors. */
+  tools: {
+    label: string;
+    openAll: string;
+    closeAll: string;
+    visitorView: string;
+    unlockDates: string;
+    check: string;
+  };
   /** Texts the browser script shows, sent to it with the page. */
   client: {
     loading: string;
@@ -28,6 +37,12 @@ export interface Strings {
     testSent: string;
     testUnknown: string;
     testFailed: string;
+    /** The content check of the author's toolbar; `{day}` is a door's number. */
+    checking: string;
+    checkOk: string;
+    checkEmpty: string;
+    checkProblem: string;
+    checkFailed: string;
   };
   /** The card a messaging app shows for a shared link, from the login page. */
   share: {
@@ -44,6 +59,8 @@ export interface Strings {
   shortDate: (now: Date, timeZone: string) => string;
   /** When a locked door opens, to follow `client.locked`. */
   unlocksOn: (day: number, month: number, year: number, time: string) => string;
+  /** When a door opens, short, on the door itself for the author. */
+  doorDate: (day: number, month: number, year: number, time: string) => string;
 }
 
 /** The minutes left before the next try, rounded up. */

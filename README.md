@@ -26,7 +26,7 @@
 - **Behind a password**: the calendar opens only with a password, shared with the people it is made for.
 - **A door a day**: each door opens at a set time on its day and holds a letter, a list, a voucher, photos or a voice message.
 - **Nothing shows early**: the server refuses a locked door and its media, even to someone reading the page source or guessing a link.
-- **Author preview**: an optional second password opens every door ahead of time, to check the content.
+- **Author preview**: an optional second password opens every door ahead of time, with a toolbar to open or close every door, see the calendar as a visitor does, show when each door opens and check every day's content.
 - **Notifications**: an optional push notification when a door opens.
 - **English or French**: set with `language` in `calendar.json`.
 

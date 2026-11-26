@@ -1,4 +1,5 @@
 import { open } from "node:fs/promises";
+import { join } from "node:path";
 import { Hono, type Context } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie";
@@ -307,6 +308,26 @@ export function createApp(deps: AppDeps): Hono<Env> {
       console.error(`${now().toISOString()} ${error.message}`);
       return c.json({ error: "broken door" }, 500);
     }
+  });
+
+  // Author mode: reads every day as a door would, and lists the empty and broken
+  // ones. Otherwise a broken day shows only when its door is opened.
+  app.get("/api/check", (c) => {
+    if (c.var.role !== "author") return c.json({ error: "author only" }, 403);
+    const empty: number[] = [];
+    const problems: { day: number; message: string }[] = [];
+    for (const day of calendarDays(settings)) {
+      try {
+        if (loadDay(contentDir, day) === null) empty.push(day);
+      } catch (error) {
+        if (!(error instanceof DayError)) throw error;
+        // Paths from the content folder, as the author writes them.
+        const message = error.message.replaceAll(join(contentDir, "/"), "");
+        problems.push({ day, message });
+      }
+    }
+    c.header("Cache-Control", "private, no-store");
+    return c.json({ empty, problems });
   });
 
   /** The JSON body of a push request, or `null` when it is not JSON. */
