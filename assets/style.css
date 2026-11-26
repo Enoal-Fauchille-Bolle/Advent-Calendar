@@ -41,6 +41,11 @@
   --tag-shadow: rgb(58 20 32 / 0.28);
   --door-shadow: rgb(58 20 32 / 0.2);
   --backdrop: rgb(58 20 32 / 0.55);
+  /* Voice-message bubble of an audio door, and its play circle. */
+  --bubble: var(--rose);
+  --bubble-ink: var(--wine);
+  --bubble-play: var(--wine);
+  --bubble-play-ink: var(--on-wine);
   --radius: 10px;
   color-scheme: light dark;
 }
@@ -62,6 +67,10 @@
     --tag-shadow: rgb(0 0 0 / 0.5);
     --door-shadow: rgb(0 0 0 / 0.45);
     --backdrop: rgb(0 0 0 / 0.65);
+    --bubble: rgb(240 163 182 / 0.18);
+    --bubble-ink: var(--accent);
+    --bubble-play: var(--accent);
+    --bubble-play-ink: var(--paper);
   }
 
   /* Closed doors keep their daytime wrapping paper, as does the copy that moves away
@@ -895,9 +904,60 @@ button {
   border-radius: 4px;
 }
 
+/* An audio block: a voice-message bubble, then its caption. */
 .preview-audio {
-  color: var(--accent);
-  font-weight: bold;
+  display: grid;
+  /* The bubble stays within the door: the wave shrinks on a narrow one. */
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
+.audio-bubble {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+  border-radius: 999px;
+  background: var(--bubble);
+  color: var(--bubble-ink);
+}
+
+.audio-play {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--bubble-play);
+  color: var(--bubble-play-ink);
+}
+
+.audio-play svg {
+  width: 0.7rem;
+  height: 0.7rem;
+  /* The triangle looks centred a little right of the middle. */
+  margin-left: 2px;
+  fill: currentColor;
+}
+
+.audio-bubble .wave {
+  flex: 1;
+  min-width: 0;
+  height: 1.1rem;
+  fill: currentColor;
+}
+
+.audio-time {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.audio-caption {
+  padding-left: 0.3rem;
+  color: var(--muted);
+  font-size: 0.75rem;
 }
 
 @media (min-width: 40rem) {

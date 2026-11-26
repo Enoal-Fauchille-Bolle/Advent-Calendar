@@ -178,11 +178,92 @@ function showDay(shown: ShownDay): void {
   show(...nodes);
 }
 
+const SVG = "http://www.w3.org/2000/svg";
+
+/** An SVG element with its attributes. */
+function svg(tag: string, attributes: Record<string, string>): SVGElement {
+  const node = document.createElementNS(SVG, tag);
+  for (const [name, value] of Object.entries(attributes)) {
+    node.setAttribute(name, value);
+  }
+  return node;
+}
+
+/** Number of bars in the sound wave of an audio preview. */
+const BARS = 22;
+
+/**
+ * Bars of different heights, like a chat voice message. They only decorate: they do not
+ * follow the sound. The same seed always draws the same bars.
+ */
+function soundWave(seed: number): SVGElement {
+  const wave = svg("svg", {
+    class: "wave",
+    viewBox: `0 0 ${String(BARS * 5 - 2)} 18`,
+    preserveAspectRatio: "none",
+    "aria-hidden": "true",
+  });
+  // A small pseudo-random sequence (linear congruential), steady for a given seed.
+  let x = (seed * 9301 + 49297) % 233280;
+  for (let i = 0; i < BARS; i++) {
+    x = (x * 9301 + 49297) % 233280;
+    const height = 3 + Math.round((x / 233280) * 13);
+    wave.append(
+      svg("rect", {
+        x: String(i * 5),
+        y: String((18 - height) / 2),
+        width: "3",
+        height: String(height),
+        rx: "1.5",
+      }),
+    );
+  }
+  return wave;
+}
+
+/** A length in seconds as minutes and seconds, such as `1:05`. */
+function minutesSeconds(seconds: number): string {
+  const whole = Math.round(seconds);
+  return `${String(Math.floor(whole / 60))}:${String(whole % 60).padStart(2, "0")}`;
+}
+
+/**
+ * A voice-message bubble: a play sign, a sound wave and the length, then the caption.
+ * The length shows once the browser has read the start of the file.
+ */
+function audioPreview(
+  block: Extract<ShownBlock, { type: "audio" }>,
+  seed: number,
+): HTMLElement {
+  const preview = element("span", "preview-audio");
+  const bubble = element("span", "audio-bubble");
+  const play = element("span", "audio-play");
+  play.append(svg("svg", { viewBox: "0 0 10 10", "aria-hidden": "true" }));
+  play.firstElementChild?.append(svg("path", { d: "M1 0.5 9.5 5 1 9.5z" }));
+  const time = element("span", "audio-time");
+  bubble.append(play, soundWave(seed), time);
+  preview.append(bubble);
+  if (block.caption !== null) {
+    preview.append(element("span", "audio-caption", block.caption));
+  }
+  const audio = new Audio();
+  audio.preload = "metadata";
+  audio.addEventListener("loadedmetadata", () => {
+    // A stream of unknown length reports Infinity: the bubble then shows no time.
+    if (Number.isFinite(audio.duration)) {
+      time.textContent = minutesSeconds(audio.duration);
+    }
+  });
+  audio.src = block.url;
+  return preview;
+}
+
 /**
  * A block as a door shows it. A door is a button, so its preview holds no link, player
- * or other control: only text and pictures, in spans.
+ * or other control: only text and pictures, in spans. `seed` varies the drawings from
+ * one block to the next.
  */
-function previewBlock(block: ShownBlock): HTMLElement {
+function previewBlock(block: ShownBlock, seed: number): HTMLElement {
   switch (block.type) {
     case "text":
     case "letter":
@@ -207,11 +288,7 @@ function previewBlock(block: ShownBlock): HTMLElement {
       return image;
     }
     case "audio":
-      return element(
-        "span",
-        "preview-audio",
-        block.caption === null ? "▶" : `▶ ${block.caption}`,
-      );
+      return audioPreview(block, seed);
   }
 }
 
@@ -229,7 +306,9 @@ function fill(door: HTMLButtonElement, shown: ShownDay): void {
     if (shown.title !== null) {
       preview.append(element("span", "preview-title", shown.title));
     }
-    for (const block of shown.blocks) preview.append(previewBlock(block));
+    shown.blocks.forEach((block, index) => {
+      preview.append(previewBlock(block, shown.day * 31 + index));
+    });
   }
   door.querySelector(".door-preview")?.remove();
   door.append(preview);
