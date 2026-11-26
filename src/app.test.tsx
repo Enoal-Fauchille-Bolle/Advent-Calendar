@@ -28,6 +28,7 @@ function makeApp(
   push?: PushDeps,
   more: Partial<Settings> = {},
   contentDir = CONTENT,
+  publicUrl?: string,
 ) {
   return createApp({
     settings: { ...readSettings(CONTENT), sizes, animations, ...more },
@@ -44,6 +45,8 @@ function makeApp(
       ["icon-192.png", new Uint8Array([137, 80, 78, 71])],
       ["icon.svg", new Uint8Array([60, 115, 118, 103])],
     ]),
+    shareImage: new Uint8Array([137, 80, 78, 71]),
+    publicUrl,
     push,
     now: () => NOW,
   });
@@ -78,6 +81,41 @@ describe("login", () => {
     const response = await makeApp().request(`${ORIGIN}/login`);
     expect(response.status).toBe(200);
     expect(await response.text()).toMatch(/^<!DOCTYPE html>/);
+  });
+
+  it("gives the login page a generic share card, text only without a public URL", async () => {
+    const page = await (await makeApp().request(`${ORIGIN}/login`)).text();
+    expect(page).toContain(
+      '<meta property="og:title" content="Advent calendar"/>',
+    );
+    expect(page).toContain(
+      '<meta property="og:description" content="A surprise behind each door, until Christmas"/>',
+    );
+    expect(page).not.toContain("og:image");
+  });
+
+  it("adds the share picture when the public URL is set", async () => {
+    const app = makeApp(
+      {},
+      {},
+      undefined,
+      {},
+      CONTENT,
+      "https://advent.example",
+    );
+    const page = await (await app.request(`${ORIGIN}/login`)).text();
+    expect(page).toContain(
+      '<meta property="og:image" content="https://advent.example/static/og.png"/>',
+    );
+    expect(page).toContain(
+      '<meta name="twitter:card" content="summary_large_image"/>',
+    );
+  });
+
+  it("serves the share picture without a login", async () => {
+    const response = await makeApp().request(`${ORIGIN}/static/og.png`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("image/png");
   });
 
   it("refuses a wrong password", async () => {

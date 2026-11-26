@@ -4,19 +4,22 @@
 
 Environment variables:
 
-| Variable                      | Required     | Meaning                                                                         |
-| ----------------------------- | ------------ | ------------------------------------------------------------------------------- |
-| `ADVENT_PASSWORD_HASH`        | yes          | Hash of the shared password, from `pnpm make-hash`                              |
-| `ADVENT_AUTHOR_PASSWORD_HASH` | no           | Hash of the author password, which opens every door early                       |
-| `ADVENT_SESSION_SECRET`       | yes          | At least 32 characters; signs the login cookie                                  |
-| `ADVENT_CONTENT_DIR`          | no           | Content folder; `content` by default, `/content` in the image                   |
-| `ADVENT_VAPID_PRIVATE_KEY`    | no           | Turns notifications on; from `pnpm make-vapid`                                  |
-| `ADVENT_VAPID_SUBJECT`        | with the key | Contact for the push services: the site's `https://` URL or a `mailto:` address |
-| `ADVENT_STATE_DIR`            | no           | Folder the server writes; `state` by default, `/state` in the image             |
-| `ADVENT_HOST`                 | no           | Address to listen on; `127.0.0.1` by default, `0.0.0.0` in the image            |
-| `ADVENT_PORT`                 | no           | Port; `3000` by default                                                         |
+| Variable                      | Required     | Meaning                                                                                            |
+| ----------------------------- | ------------ | -------------------------------------------------------------------------------------------------- |
+| `ADVENT_PASSWORD_HASH`        | yes          | Hash of the shared password, from `pnpm make-hash`                                                 |
+| `ADVENT_AUTHOR_PASSWORD_HASH` | no           | Hash of the author password, which opens every door early                                          |
+| `ADVENT_SESSION_SECRET`       | yes          | At least 32 characters; signs the login cookie                                                     |
+| `ADVENT_CONTENT_DIR`          | no           | Content folder; `content` by default, `/content` in the image                                      |
+| `ADVENT_VAPID_PRIVATE_KEY`    | no           | Turns notifications on; from `pnpm make-vapid`                                                     |
+| `ADVENT_VAPID_SUBJECT`        | with the key | Contact for the push services: the site's `https://` URL or a `mailto:` address                    |
+| `ADVENT_PUBLIC_URL`           | no           | The site's address, such as `https://advent.example.com`; adds the picture to a shared link's card |
+| `ADVENT_STATE_DIR`            | no           | Folder the server writes; `state` by default, `/state` in the image                                |
+| `ADVENT_HOST`                 | no           | Address to listen on; `127.0.0.1` by default, `0.0.0.0` in the image                               |
+| `ADVENT_PORT`                 | no           | Port; `3000` by default                                                                            |
 
 A login lasts 60 days. Changing `ADVENT_SESSION_SECRET` signs every device out. After five wrong passwords in a row, the login waits 1, then 5, then 15 minutes between tries.
+
+A link to the site shared in a messaging app shows a card with a generic title and description, in the calendar's language, read from the login page. With `ADVENT_PUBLIC_URL` set, the card also shows a picture of the example calendar (`assets/og.png`, made by `node examples/tools/make-screenshot.ts share`): messaging apps need its full address.
 
 Read by the compose file from `.env`, not by the server:
 

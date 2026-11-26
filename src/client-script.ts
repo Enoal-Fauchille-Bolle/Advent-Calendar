@@ -48,6 +48,11 @@ export function loadFonts(): ReadonlyMap<string, Uint8Array<ArrayBuffer>> {
   );
 }
 
+/** The picture of a shared link's card, `assets/og.png`. */
+export function loadShareImage(): Uint8Array<ArrayBuffer> {
+  return readFileSync(new URL("../assets/og.png", import.meta.url));
+}
+
 /** Icon sizes in pixels, for the manifest and the notifications. */
 export const ICON_SIZES = [192, 512] as const;
 

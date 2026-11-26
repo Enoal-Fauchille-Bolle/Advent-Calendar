@@ -65,4 +65,37 @@ describe("readConfig", () => {
       }),
     ).toThrow(ConfigError);
   });
+
+  it("leaves the public URL out when it is not set", () => {
+    expect(readConfig(base).publicUrl).toBeUndefined();
+    expect(readConfig({ ...base, ADVENT_PUBLIC_URL: "" }).publicUrl).toBe(
+      undefined,
+    );
+  });
+
+  it("reads the public URL without its final slashes", () => {
+    for (const [given, kept] of [
+      ["https://advent.example", "https://advent.example"],
+      ["https://advent.example/", "https://advent.example"],
+      ["http://advent.example:8080//", "http://advent.example:8080"],
+      ["https://example.org/advent/", "https://example.org/advent"],
+    ]) {
+      expect(readConfig({ ...base, ADVENT_PUBLIC_URL: given }).publicUrl).toBe(
+        kept,
+      );
+    }
+  });
+
+  it("refuses a public URL that is not an http(s) address", () => {
+    for (const url of [
+      "advent.example",
+      "ftp://advent.example",
+      "https://advent.example/?a=1",
+      "https://advent.example/#top",
+    ]) {
+      expect(() => readConfig({ ...base, ADVENT_PUBLIC_URL: url })).toThrow(
+        /ADVENT_PUBLIC_URL/,
+      );
+    }
+  });
 });

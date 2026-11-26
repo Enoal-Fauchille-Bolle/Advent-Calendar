@@ -1,9 +1,13 @@
 // Takes the picture at the top of the README: the example calendar on a
 // desktop, a tablet and a phone, each in a plain device frame, in light and
 // dark mode. Writes docs/images/screenshot-light.png and screenshot-dark.png.
+// Also takes the picture of a shared link's card, assets/og.png (1200x630):
+// a desktop and a phone, in light mode.
 //
 // Run from the repository root, after `pnpm install`:
-//   node examples/tools/make-screenshot.ts
+//   node examples/tools/make-screenshot.ts          # both
+//   node examples/tools/make-screenshot.ts readme   # the README pictures only
+//   node examples/tools/make-screenshot.ts share    # assets/og.png only
 // Needs Firefox, driven over WebDriver BiDi (no geckodriver), and ffmpeg built
 // with librsvg (SVG to PNG). The header shows the day the script runs.
 
@@ -24,6 +28,11 @@ import { join } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const OUT = "docs/images";
+const SHARE_OUT = "assets/og.png";
+const MODE = process.argv[2] ?? "all";
+if (!["all", "readme", "share"].includes(MODE)) {
+  throw new Error(`Unknown mode "${MODE}": expected readme or share`);
+}
 // Made at each run: the server only lives as long as the script.
 const PASSWORD = randomBytes(12).toString("hex");
 // The showcase days show their preview; the tour days stay closed.
@@ -367,9 +376,76 @@ function compose(shots: Record<DeviceName, string>, theme: Theme): string {
 </svg>`;
 }
 
+/** Background of the share picture: the page's paper colour in light mode. */
+const SHARE_PAPER = "#fbf6ee";
+
+/**
+ * The share picture, 1200x630 as messaging apps expect: the desktop on the left, the
+ * phone on the right, on the page's paper.
+ */
+function composeShare(desktopShot: string, phoneShot: string): string {
+  const width = 1200;
+  const height = 630;
+  const colours = FRAME.light;
+  const desktop: Placed = {
+    shot: desktopShot,
+    device: "desktop",
+    x: 70,
+    y: 36,
+    scale: 0.52,
+    bezel: 14,
+    radius: 16,
+  };
+  const screenWidth =
+    VIEWPORTS.desktop.width * desktop.scale + 2 * desktop.bezel;
+  const screenBottom =
+    desktop.y + VIEWPORTS.desktop.height * desktop.scale + 2 * desktop.bezel;
+  const centre = desktop.x + screenWidth / 2;
+  const phone: Placed = {
+    shot: phoneShot,
+    device: "phone",
+    x: width - 70 - (VIEWPORTS.phone.width * 0.6 + 2 * 10),
+    y: height - 30 - (VIEWPORTS.phone.height * 0.6 + 2 * 10),
+    scale: 0.6,
+    bezel: 10,
+    radius: 28,
+  };
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${String(width)}" height="${String(height)}">
+  <defs>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity="${String(colours.shadow)}"/>
+    </filter>
+  </defs>
+  <rect width="${String(width)}" height="${String(height)}" fill="${SHARE_PAPER}"/>
+  <path d="M${String(centre - 34)} ${String(screenBottom - 2)} h68 l12 60 h-92 z" fill="${colours.stand}"/>
+  <rect x="${String(centre - 110)}" y="${String(screenBottom + 56)}" width="220" height="12" rx="6" fill="${colours.base}"/>
+  ${frame(desktop, "light")}
+  ${frame(phone, "light")}
+</svg>`;
+}
+
+/** Turns an SVG into a PNG with ffmpeg. */
+function svgToPng(svg: string, png: string): void {
+  execFileSync("ffmpeg", [
+    "-hide_banner",
+    "-loglevel",
+    "error",
+    "-y",
+    "-i",
+    svg,
+    "-frames:v",
+    "1",
+    "-compression_level",
+    "9",
+    png,
+  ]);
+}
+
 async function main(): Promise<void> {
   const base = await startServer();
-  for (const theme of ["light", "dark"] as const) {
+  const themes =
+    MODE === "share" ? (["light"] as const) : (["light", "dark"] as const);
+  for (const theme of themes) {
     const browser = await Browser.open(theme);
     await browser.goto(`${base}/login`);
     await browser.run(`(async () => {
@@ -386,22 +462,18 @@ async function main(): Promise<void> {
       phone: await browser.capture("phone", `${base}/`),
     };
     await browser.close();
-    const svg = join(work, `screenshot-${theme}.svg`);
-    writeFileSync(svg, compose(shots, theme));
-    execFileSync("ffmpeg", [
-      "-hide_banner",
-      "-loglevel",
-      "error",
-      "-y",
-      "-i",
-      svg,
-      "-frames:v",
-      "1",
-      "-compression_level",
-      "9",
-      join(OUT, `screenshot-${theme}.png`),
-    ]);
-    console.log(`${OUT}/screenshot-${theme}.png`);
+    if (MODE !== "share") {
+      const svg = join(work, `screenshot-${theme}.svg`);
+      writeFileSync(svg, compose(shots, theme));
+      svgToPng(svg, join(OUT, `screenshot-${theme}.png`));
+      console.log(`${OUT}/screenshot-${theme}.png`);
+    }
+    if (MODE !== "readme" && theme === "light") {
+      const svg = join(work, "share.svg");
+      writeFileSync(svg, composeShare(shots.desktop, shots.phone));
+      svgToPng(svg, SHARE_OUT);
+      console.log(SHARE_OUT);
+    }
   }
 }
 

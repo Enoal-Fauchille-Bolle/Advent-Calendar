@@ -32,6 +32,10 @@ export const fr: Strings = {
       "Cet appareil n'est pas enregistré pour les notifications. Recharge la page puis réessaie.",
     testFailed: "L'envoi a échoué. Réessaie dans un instant.",
   },
+  share: {
+    title: "Calendrier de l'Avent",
+    description: "Une surprise derrière chaque porte, jusqu'à Noël",
+  },
   push: {
     door: "La porte {day} est ouverte 🎁",
     test: "Les notifications marchent 🎉",

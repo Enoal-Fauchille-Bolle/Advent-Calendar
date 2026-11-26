@@ -29,6 +29,11 @@ export interface Strings {
     testUnknown: string;
     testFailed: string;
   };
+  /** The card a messaging app shows for a shared link, from the login page. */
+  share: {
+    title: string;
+    description: string;
+  };
   /** Texts of the notifications. */
   push: {
     /** The door's notification when `calendar.json` gives none; `{day}` is its number. */

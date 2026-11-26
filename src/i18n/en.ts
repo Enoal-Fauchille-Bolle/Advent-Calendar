@@ -31,6 +31,10 @@ export const en: Strings = {
       "This device is not registered for notifications. Reload the page, then try again.",
     testFailed: "Sending failed. Try again in a moment.",
   },
+  share: {
+    title: "Advent calendar",
+    description: "A surprise behind each door, until Christmas",
+  },
   push: {
     door: "Door {day} is open 🎁",
     test: "Notifications work 🎉",

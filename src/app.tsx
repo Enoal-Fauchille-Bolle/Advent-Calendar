@@ -38,6 +38,10 @@ export interface AppDeps {
   serviceWorker: string;
   /** The icons of `assets/icons/`, by file name. */
   icons: ReadonlyMap<string, Uint8Array<ArrayBuffer>>;
+  /** The picture of a shared link's card, `assets/og.png`. */
+  shareImage: Uint8Array<ArrayBuffer>;
+  /** The site's address, without a final slash; the card shows its picture only with it. */
+  publicUrl?: string | undefined;
   /** Web push; absent when no VAPID key is set. */
   push?: PushDeps | undefined;
   /** The current time; tests replace it. */
@@ -163,6 +167,11 @@ export function createApp(deps: AppDeps): Hono<Env> {
     });
   });
 
+  // Public: messaging apps fetch it without logging in.
+  app.get("/static/og.png", (c) =>
+    c.body(deps.shareImage, 200, { "Content-Type": "image/png" }),
+  );
+
   const readRole = async (c: Context<Env>): Promise<Role | null> => {
     const value = await getSignedCookie(c, deps.sessionSecret, SESSION_COOKIE);
     return typeof value === "string" ? decodeSession(value, now()) : null;
@@ -170,7 +179,19 @@ export function createApp(deps: AppDeps): Hono<Env> {
 
   app.get("/login", async (c) => {
     if ((await readRole(c)) !== null) return c.redirect("/");
-    return c.html(<LoginPage title={settings.title} t={t} />);
+    return c.html(
+      <LoginPage
+        title={settings.title}
+        t={t}
+        share={{
+          ...t.share,
+          image:
+            deps.publicUrl === undefined
+              ? undefined
+              : `${deps.publicUrl}/static/og.png`,
+        }}
+      />,
+    );
   });
 
   app.post("/login", bodyLimit({ maxSize: 16 * 1024 }), async (c) => {

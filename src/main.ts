@@ -7,6 +7,7 @@ import {
   loadFonts,
   loadIcons,
   loadServiceWorker,
+  loadShareImage,
   loadStyle,
 } from "./client-script.ts";
 import { ConfigError, readConfig } from "./config.ts";
@@ -88,6 +89,8 @@ const app = createApp({
   fonts: loadFonts(),
   serviceWorker: loadServiceWorker(),
   icons: loadIcons(),
+  shareImage: loadShareImage(),
+  publicUrl: config.publicUrl,
   push,
 });
 

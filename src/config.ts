@@ -24,6 +24,23 @@ export interface Config {
   authorPasswordHash: string | undefined;
   /** Key that signs the login cookie; changing it logs everyone out. */
   sessionSecret: string;
+  /**
+   * The site's address as visitors type it, such as `https://advent.example`, without
+   * a final slash; optional. A shared link's card shows a picture only with it.
+   */
+  publicUrl: string | undefined;
+}
+
+/** A public URL without its final slashes, or `undefined` when it is not http(s). */
+function publicAddress(value: string): string | undefined {
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return undefined;
+    if (url.search !== "" || url.hash !== "") return undefined;
+    return url.href.replace(/\/+$/, "");
+  } catch {
+    return undefined;
+  }
 }
 
 const SESSION_SECRET_MIN_LENGTH = 32;
@@ -91,6 +108,14 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     push = { privateKey, publicKey, subject };
   }
 
+  const publicText = env.ADVENT_PUBLIC_URL ?? "";
+  const publicUrl = publicText === "" ? undefined : publicAddress(publicText);
+  if (publicText !== "" && publicUrl === undefined) {
+    problems.push(
+      `ADVENT_PUBLIC_URL must be empty or the site's http(s):// address, got "${publicText}"`,
+    );
+  }
+
   if (problems.length > 0) {
     throw new ConfigError(`Invalid configuration:\n- ${problems.join("\n- ")}`);
   }
@@ -104,5 +129,6 @@ export function readConfig(env: NodeJS.ProcessEnv): Config {
     passwordHash,
     authorPasswordHash,
     sessionSecret,
+    publicUrl,
   };
 }
