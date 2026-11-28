@@ -1,0 +1,57 @@
+name: Demo
+
+# Publishes the demo, a frozen copy of the example calendar made by
+# examples/tools/make-demo.ts, to GitHub Pages under /demo/. Runs at each release
+# tag, so the demo matches the released image, or by hand from the Actions tab.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions: {}
+
+# One publish at a time; a running one finishes rather than leave a half-made site.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      # The pnpm version comes from `packageManager` in package.json.
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      # Gives the site's address, for the picture of a shared link's card.
+      - id: pages
+        uses: actions/configure-pages@v6
+
+      - run: pnpm exec tsx examples/tools/make-demo.ts --out dist/pages --url "$BASE_URL/demo"
+        env:
+          BASE_URL: ${{ steps.pages.outputs.base_url }}
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist/pages
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}demo/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5
