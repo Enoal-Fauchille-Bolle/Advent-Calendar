@@ -17,13 +17,34 @@ Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 
   The dev file names the image `advent-calendar:dev`, so a local build never replaces the published one.
 
-- **Media**: `examples/tools/make-media.ts` draws the pictures and plays the melodies of the examples (ffmpeg). `examples/tools/make-screenshot.ts` takes the picture of the README (Firefox and ffmpeg): run it again after a visual change.
+- **Media**: `examples/tools/make-media.ts` draws the pictures and plays the melodies of the examples (ffmpeg). Screenshots have their own section below.
 
 ## Checks
 
 - `pnpm check` runs the type check, eslint, prettier and the tests (vitest). The release workflow runs it too.
 - Before each commit, a hook formats the staged files with prettier and lints them with eslint.
 - A test keeps the compose file shown in the README equal to `deploy/docker-compose.yml`.
+
+## Interface languages
+
+Every text of the interface lives in `src/i18n/`, one file per language (`en.ts`, `fr.ts`), each implementing the `Strings` type of `types.ts`.
+
+- **Change a text**: edit it in every language file. The texts the browser script shows sit under `client`, sent with the page.
+- **Add a text**: add its key to `Strings` in `types.ts` first. The type check in `pnpm check` then fails until every language file has it.
+- **Add a language**: copy `en.ts` to a file named after the language code (`de.ts`, for example), translate it, and add it to `TRANSLATIONS` in `index.ts`. From then on, `language` in `calendar.json` accepts the code. Add it to the `language` row of [docs/content.md](docs/content.md) and to the features list of the README, and update the test "has English and French, English first" in `i18n.test.ts`.
+- **Typography**: `typography.ts` applies a language's spacing rules to the text of the days. In French, the space before `: ; ! ?` and `»`, and after `«`, becomes a no-break space (U+00A0, since Fraunces and Nunito lack the narrow U+202F). A language with rules of its own gets a function there, called from `polishDay`.
+
+## Screenshots
+
+`examples/tools/make-screenshot.ts` takes the README pictures (`docs/images/screenshot-light.png`, `screenshot-dark.png`) and the picture of a shared link's card (`assets/og.png`). Run it again after a visual change, from the repository root:
+
+```bash
+node examples/tools/make-screenshot.ts          # both
+node examples/tools/make-screenshot.ts readme   # the README pictures only
+node examples/tools/make-screenshot.ts share    # assets/og.png only
+```
+
+It needs Firefox and an ffmpeg built with librsvg. The header shows the day the script runs: set the computer's clock to a day in December first, so the date fits the calendar.
 
 ## Commits
 
