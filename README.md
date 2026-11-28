@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/content.md">Writing the content</a> · <a href="docs/hosting.md">Hosting</a> · <a href="docs/troubleshooting.md">Troubleshooting</a> · <a href="CONTRIBUTING.md">Contributing</a>
+  <a href="https://enoal-fauchille-bolle.github.io/Advent-Calendar/demo/">Demo</a> · <a href="docs/content.md">Writing the content</a> · <a href="docs/hosting.md">Hosting</a> · <a href="docs/troubleshooting.md">Troubleshooting</a> · <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 <picture>
