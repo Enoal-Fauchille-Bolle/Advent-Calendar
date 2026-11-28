@@ -30,6 +30,13 @@ Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
 - [Conventional Commits](https://www.conventionalcommits.org/), checked by commitlint in the `commit-msg` hook (`commitlint.config.mjs`): one lowercase line, with no body, no footer and no `!`.
 - The release notes (`cliff.toml`) keep `feat`, `fix`, `perf`, `build(deps…)` and reverts. `feat(security)` and `fix(security)` go in a Security group at the top. `fix(ci)` and the other types are left out, so the type follows what someone running the calendar would notice.
 
+## AI assistance
+
+Code, docs and issues written with an AI assistant follow the same rules as any other contribution:
+
+- The author has read, understood and tested every line, and answers review questions about it.
+- The pull request says which tool helped, and with what. One line is enough.
+
 ## Releases
 
 1. Set the new version in the `image` line of `deploy/docker-compose.yml`, copy the file into the quick start of the README (`pnpm check` fails until both match), and commit.
