@@ -36,15 +36,16 @@ Every text of the interface lives in `src/i18n/`, one file per language (`en.ts`
 
 ## Screenshots
 
-`examples/tools/make-screenshot.ts` takes the README pictures (`docs/images/screenshot-light.png`, `screenshot-dark.png`) and the picture of a shared link's card (`assets/og.png`). Run it again after a visual change, from the repository root:
+`examples/tools/make-screenshot.ts` takes the README pictures (`docs/images/screenshot-light.png`, `screenshot-dark.png`), the picture of a shared link's card (`assets/og.png`) and the repository's social preview on GitHub (`docs/images/social-preview.png`). Run it again after a visual change, from the repository root:
 
 ```bash
-node examples/tools/make-screenshot.ts          # both
-node examples/tools/make-screenshot.ts readme   # the README pictures only
-node examples/tools/make-screenshot.ts share    # assets/og.png only
+node examples/tools/make-screenshot.ts --date 2026-12-14          # all three
+node examples/tools/make-screenshot.ts readme --date 2026-12-14   # the README pictures only
+node examples/tools/make-screenshot.ts share --date 2026-12-14    # assets/og.png only
+node examples/tools/make-screenshot.ts github --date 2026-12-14   # the social preview only
 ```
 
-It needs Firefox and an ffmpeg built with librsvg. The header shows the day the script runs: set the computer's clock to a day in December first, so the date fits the calendar.
+It needs Firefox and an ffmpeg built with librsvg. `--date` sets the day shown in the header, so the date fits the calendar; without it, the header shows the day the script runs. The social preview is not read from the repository: after a change, upload it by hand under the repository's Settings → Social preview → Edit.
 
 ## Commits
 

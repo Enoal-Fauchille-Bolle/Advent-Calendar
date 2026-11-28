@@ -2,14 +2,20 @@
 // desktop, a tablet and a phone, each in a plain device frame, in light and
 // dark mode. Writes docs/images/screenshot-light.png and screenshot-dark.png.
 // Also takes the picture of a shared link's card, assets/og.png (1200x630):
-// a desktop and a phone, in light mode.
+// a desktop and a phone, in light mode. And the repository's social preview on
+// GitHub, docs/images/social-preview.png (1280x640): the icon, the name and the
+// tagline above a desktop and a phone, in light mode, uploaded by hand under
+// Settings > Social preview.
 //
 // Run from the repository root, after `pnpm install`:
-//   node examples/tools/make-screenshot.ts          # both
+//   node examples/tools/make-screenshot.ts          # all three
 //   node examples/tools/make-screenshot.ts readme   # the README pictures only
 //   node examples/tools/make-screenshot.ts share    # assets/og.png only
+//   node examples/tools/make-screenshot.ts github   # the social preview only
+// Add `--date YYYY-MM-DD` to show that day in the header (fake-clock.ts moves
+// the test server's clock); without it, the header shows the day the script runs.
 // Needs Firefox, driven over WebDriver BiDi (no geckodriver), and ffmpeg built
-// with librsvg (SVG to PNG). The header shows the day the script runs.
+// with librsvg (SVG to PNG).
 
 import { execFileSync, spawn, type ChildProcess } from "node:child_process";
 import { randomBytes } from "node:crypto";
@@ -24,15 +30,28 @@ import {
 } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { setTimeout as sleep } from "node:timers/promises";
+import { pathToFileURL } from "node:url";
 
 const OUT = "docs/images";
 const SHARE_OUT = "assets/og.png";
-const MODE = process.argv[2] ?? "all";
-if (!["all", "readme", "share"].includes(MODE)) {
-  throw new Error(`Unknown mode "${MODE}": expected readme or share`);
+const GITHUB_OUT = "docs/images/social-preview.png";
+/** GitHub refuses a social preview of 1 MB or more. */
+const GITHUB_MAX_BYTES = 1_000_000;
+
+const args = process.argv.slice(2);
+const dateAt = args.indexOf("--date");
+const DATE = dateAt === -1 ? undefined : args.splice(dateAt, 2)[1];
+if (dateAt !== -1 && !/^\d{4}-\d{2}-\d{2}$/.test(DATE ?? "")) {
+  throw new Error("--date expects a day as YYYY-MM-DD");
 }
+const MODE = args[0] ?? "all";
+if (!["all", "readme", "share", "github"].includes(MODE)) {
+  throw new Error(`Unknown mode "${MODE}": expected readme, share or github`);
+}
+// Noon UTC falls on the same day from UTC-11 to UTC+11, whatever the calendar's timezone.
+const NOW = DATE === undefined ? undefined : `${DATE}T12:00:00Z`;
 // Made at each run: the server only lives as long as the script.
 const PASSWORD = randomBytes(12).toString("hex");
 // The showcase days show their preview; the tour days stay closed.
@@ -112,7 +131,7 @@ async function waitFor(child: ChildProcess, pattern: RegExp) {
   });
 }
 
-/** The example calendar with every door unlocked: a year already past. */
+/** The example calendar with every door unlocked: a year already past, on the server's clock. */
 function unlockedContent(): string {
   const dir = join(work, "content");
   cpSync("examples/content", dir, { recursive: true });
@@ -120,7 +139,7 @@ function unlockedContent(): string {
   const calendar = JSON.parse(readFileSync(file, "utf8")) as {
     year: number;
   };
-  calendar.year = new Date().getFullYear() - 1;
+  calendar.year = new Date(NOW ?? Date.now()).getUTCFullYear() - 1;
   writeFileSync(file, JSON.stringify(calendar));
   return dir;
 }
@@ -131,12 +150,25 @@ async function startServer(): Promise<string> {
     encoding: "utf8",
   }).trim();
   const port = await freePort();
+  const clock =
+    NOW === undefined
+      ? {}
+      : {
+          SCREENSHOT_NOW: NOW,
+          NODE_OPTIONS: [
+            process.env.NODE_OPTIONS,
+            `--import=${pathToFileURL(resolve("examples/tools/fake-clock.ts")).href}`,
+          ]
+            .filter(Boolean)
+            .join(" "),
+        };
   const server = start("node_modules/.bin/tsx", ["src/main.ts"], {
     ADVENT_PASSWORD_HASH: hash,
     ADVENT_SESSION_SECRET: randomBytes(32).toString("base64"),
     ADVENT_CONTENT_DIR: unlockedContent(),
     ADVENT_HOST: "127.0.0.1",
     ADVENT_PORT: String(port),
+    ...clock,
   });
   await waitFor(server, /listening on/);
   return `http://127.0.0.1:${String(port)}`;
@@ -247,11 +279,14 @@ class Browser {
     });
   }
 
-  /** The visible part of the page, as a PNG data URL. */
-  async capture(device: DeviceName, url: string): Promise<string> {
+  /** The visible part of the page at that viewport size, as a PNG data URL. */
+  async capture(
+    viewport: { width: number; height: number },
+    url: string,
+  ): Promise<string> {
     await this.send("browsingContext.setViewport", {
       context: this.context,
-      viewport: VIEWPORTS[device],
+      viewport,
       devicePixelRatio: 1,
     });
     await this.goto(url);
@@ -424,6 +459,49 @@ function composeShare(desktopShot: string, phoneShot: string): string {
 </svg>`;
 }
 
+/** A file as a data URL, so the page needs nothing outside itself. */
+function dataUrl(path: string, type: string): string {
+  return `data:${type};base64,${readFileSync(path).toString("base64")}`;
+}
+
+/**
+ * The GitHub social preview, 1280x640: icon and name on one line, the tagline,
+ * then the desktop cut off by the bottom edge and the phone in front on the right.
+ * An HTML page rather than an SVG: ffmpeg's librsvg only draws system fonts, and
+ * Fraunces and Nunito live in the repository.
+ */
+function composeGithub(desktopShot: string, phoneShot: string): string {
+  const fraunces = dataUrl("assets/fonts/fraunces.woff2", "font/woff2");
+  const nunito = dataUrl("assets/fonts/nunito.woff2", "font/woff2");
+  const icon = dataUrl("assets/icons/icon.svg", "image/svg+xml");
+  const colours = FRAME.light;
+  return `<!doctype html><meta charset="utf-8"><style>
+  @font-face { font-family: Fraunces; src: url("${fraunces}"); font-weight: 100 900; }
+  @font-face { font-family: Nunito; src: url("${nunito}"); font-weight: 200 1000; }
+  html, body { margin: 0; }
+  body { width: 1280px; height: 640px; overflow: hidden; position: relative;
+    background: ${SHARE_PAPER}; color: #3a1420; font-family: Nunito; }
+  .title { position: absolute; top: 44px; left: 0; right: 0; text-align: center; }
+  .name { display: inline-flex; align-items: center; gap: 22px; }
+  .name img { width: 76px; height: 76px; }
+  h1 { margin: 0; font: 700 68px/1 Fraunces; color: #7a1f3d; letter-spacing: -0.5px; }
+  p { margin: 14px 0 0; font-size: 28px; line-height: 1.3; }
+  .device { position: absolute; background: ${colours.bezel};
+    box-shadow: 0 10px 26px rgba(0, 0, 0, ${String(colours.shadow)}); }
+  .device img { display: block; width: 100%; height: 100%; }
+  .desktop { left: 200px; top: 236px; width: 800px; height: 500px; padding: 16px; border-radius: 18px; }
+  .desktop img { border-radius: 4px; }
+  .phone { left: 930px; top: 270px; width: 190px; height: 411px; padding: 9px; border-radius: 28px; }
+  .phone img { border-radius: 20px; }
+</style>
+<div class="title">
+  <div class="name"><img src="${icon}" alt=""><h1>Advent-Calendar</h1></div>
+  <p>A self-hosted advent calendar with a surprise behind each door</p>
+</div>
+<div class="device desktop"><img src="${desktopShot}" alt=""></div>
+<div class="device phone"><img src="${phoneShot}" alt=""></div>`;
+}
+
 /** Turns an SVG into a PNG with ffmpeg. */
 function svgToPng(svg: string, png: string): void {
   execFileSync("ffmpeg", [
@@ -444,7 +522,9 @@ function svgToPng(svg: string, png: string): void {
 async function main(): Promise<void> {
   const base = await startServer();
   const themes =
-    MODE === "share" ? (["light"] as const) : (["light", "dark"] as const);
+    MODE === "share" || MODE === "github"
+      ? (["light"] as const)
+      : (["light", "dark"] as const);
   for (const theme of themes) {
     const browser = await Browser.open(theme);
     await browser.goto(`${base}/login`);
@@ -457,18 +537,34 @@ async function main(): Promise<void> {
       localStorage.setItem("advent-calendar:opened", ${JSON.stringify(JSON.stringify(OPENED))});
     })()`);
     const shots = {
-      desktop: await browser.capture("desktop", `${base}/`),
-      tablet: await browser.capture("tablet", `${base}/`),
-      phone: await browser.capture("phone", `${base}/`),
+      desktop: await browser.capture(VIEWPORTS.desktop, `${base}/`),
+      tablet: await browser.capture(VIEWPORTS.tablet, `${base}/`),
+      phone: await browser.capture(VIEWPORTS.phone, `${base}/`),
     };
+    if ((MODE === "all" || MODE === "github") && theme === "light") {
+      const page = join(work, "github.html");
+      writeFileSync(page, composeGithub(shots.desktop, shots.phone));
+      const shot = await browser.capture(
+        { width: 1280, height: 640 },
+        pathToFileURL(page).href,
+      );
+      const png = Buffer.from(shot.slice(shot.indexOf(",") + 1), "base64");
+      if (png.length >= GITHUB_MAX_BYTES) {
+        throw new Error(
+          `${GITHUB_OUT} would weigh ${String(png.length)} bytes: GitHub takes under 1 MB`,
+        );
+      }
+      writeFileSync(GITHUB_OUT, png);
+      console.log(GITHUB_OUT);
+    }
     await browser.close();
-    if (MODE !== "share") {
+    if (MODE === "all" || MODE === "readme") {
       const svg = join(work, `screenshot-${theme}.svg`);
       writeFileSync(svg, compose(shots, theme));
       svgToPng(svg, join(OUT, `screenshot-${theme}.png`));
       console.log(`${OUT}/screenshot-${theme}.png`);
     }
-    if (MODE !== "readme" && theme === "light") {
+    if ((MODE === "all" || MODE === "share") && theme === "light") {
       const svg = join(work, "share.svg");
       writeFileSync(svg, composeShare(shots.desktop, shots.phone));
       svgToPng(svg, SHARE_OUT);
