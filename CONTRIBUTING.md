@@ -2,6 +2,8 @@
 
 Advent-Calendar has a single maintainer. Bug reports and small fixes are welcome; for a larger change, open an issue first, so the idea can be agreed on before the work starts.
 
+Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
+
 ## Setup
 
 - **Tools**: Node 24 and pnpm (the version is in `packageManager`, in `package.json`).
