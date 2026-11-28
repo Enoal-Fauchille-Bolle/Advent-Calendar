@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <a href="docs/content.md">Writing the content</a> · <a href="docs/hosting.md">Hosting</a> · <a href="CONTRIBUTING.md">Contributing</a>
+  <a href="docs/content.md">Writing the content</a> · <a href="docs/hosting.md">Hosting</a> · <a href="docs/troubleshooting.md">Troubleshooting</a> · <a href="CONTRIBUTING.md">Contributing</a>
 </p>
 
 <picture>
@@ -106,6 +106,7 @@ Then open `http://127.0.0.1:3000`. `test` shows the doors as they will appear on
 
 - [Writing the content](docs/content.md): `calendar.json`, `day.json`, door sizes and animations.
 - [Hosting](docs/hosting.md): configuration, notifications, Docker.
+- [Troubleshooting](docs/troubleshooting.md): what a message in the log means, and the usual fixes.
 
 ## Development
 
