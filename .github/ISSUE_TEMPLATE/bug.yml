@@ -1,0 +1,60 @@
+name: Bug report
+description: Something does not work as the docs describe.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A security flaw goes to [private reporting](https://github.com/Enoal-Fauchille-Bolle/Advent-Calendar/security/advisories/new) instead, see the [security policy](https://github.com/Enoal-Fauchille-Bolle/Advent-Calendar/blob/main/SECURITY.md).
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: The release you run, as in the image tag.
+      placeholder: "0.4.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: setup
+    attributes:
+      label: How it runs
+      options:
+        - Docker, with the compose file of this repository
+        - Another container setup (Kubernetes, Podman, ...)
+        - From source, with pnpm
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      description: Leave empty when the problem is on the server.
+      placeholder: "Chrome 140 on an Android phone"
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should have happened
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Server logs
+      description: The lines around the problem. Remove passwords, hashes and secrets first.
+      render: shell

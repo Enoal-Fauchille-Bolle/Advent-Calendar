@@ -1,0 +1,19 @@
+name: Idea
+description: Something the calendar could do.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: What you want to do
+      description: What the calendar does not let you do today, and for whom.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How it could work
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Other ways considered
